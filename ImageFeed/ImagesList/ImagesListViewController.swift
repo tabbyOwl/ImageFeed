@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ImagesListViewController: UIViewController {
+final class ImagesListViewController: UIViewController {
     // MARK: - @IBOutlets
     @IBOutlet private var tableView: UITableView!
     
@@ -35,8 +35,22 @@ class ImagesListViewController: UIViewController {
     }
     
     private func setupTable() {
-        tableView.rowHeight = 200
         tableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)
+    }
+    
+    private func addGradientToLabel(_ view: UIView) {
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.frame = view.bounds
+        
+        gradientLayer.colors = [
+            UIColor(red: 26/255, green: 27/255, blue: 34/255, alpha: 0.5).cgColor,
+            UIColor(red: 26/255, green: 27/255, blue: 34/255, alpha: 0).cgColor
+        ]
+        gradientLayer.locations = [0.0, 0.7]
+        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
+        gradientLayer.endPoint = CGPoint(x: 1, y: 0)
+        
+        view.layer.insertSublayer(gradientLayer, at: 0)
     }
 }
 
@@ -49,18 +63,19 @@ extension ImagesListViewController {
         cell.imageCellView.image = image
         let date = dateFormatter.string(from: Date())
         cell.dateLabel.text = date
+        addGradientToLabel(cell.gradientView)
         
         let isLiked = indexPath.row % 2 == 0
-        let likeImage = isLiked ? UIImage(named: "Active") : UIImage(named: "No Active")
+        let likeImage = isLiked ? UIImage(resource: .active) : UIImage(resource: .noActive)
+        cell.likeButton.setTitle("", for: .normal)
         cell.likeButton.setImage(likeImage, for: .normal)
-        
     }
 }
 
 // MARK: - UITableViewDataSource
 extension ImagesListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return photosName.count
+        photosName.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

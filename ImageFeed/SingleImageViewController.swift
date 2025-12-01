@@ -8,6 +8,7 @@
 import UIKit
 
 class SingleImageViewController: UIViewController {
+    @IBOutlet weak var backButton: UIButton!
     var image: UIImage?
     
     @IBOutlet weak var imageView: UIImageView!
@@ -15,5 +16,12 @@ class SingleImageViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         imageView.image = image
+        backButton.setTitle("", for: .normal)
     }
+    
+    @IBAction func didTapBackButton(_ sender: Any) {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    
 }

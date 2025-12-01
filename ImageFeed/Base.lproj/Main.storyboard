@@ -100,7 +100,6 @@
                                             <outlet property="gradientView" destination="JAH-pE-AG4" id="DkC-7k-ASb"/>
                                             <outlet property="imageCellView" destination="Es8-pc-SeD" id="BeU-ml-7y1"/>
                                             <outlet property="likeButton" destination="4ug-5y-lrf" id="ycv-xp-uMP"/>
-                                            <segue destination="fGP-H7-ji9" kind="show" id="1aj-qg-nYz"/>
                                         </connections>
                                     </tableViewCell>
                                 </prototypes>
@@ -118,6 +117,7 @@
                     <navigationItem key="navigationItem" id="UZV-Gn-Fc3"/>
                     <connections>
                         <outlet property="tableView" destination="9ST-Nr-Jea" id="0ZH-xC-kjK"/>
+                        <segue destination="fGP-H7-ji9" kind="presentation" identifier="ShowSingleImage" id="vc2-fP-Okp"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -129,11 +129,11 @@
             <objects>
                 <viewController id="fGP-H7-ji9" customClass="SingleImageViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="hnz-ch-j1Q">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="793"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="1" translatesAutoresizingMaskIntoConstraints="NO" id="74v-eo-Oax">
-                                <rect key="frame" x="16" y="172" width="361" height="563"/>
+                                <rect key="frame" x="16" y="59" width="361" height="734"/>
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="OmM-tn-ZNZ"/>
@@ -232,15 +232,18 @@
         <scene sceneID="h3k-p8-w0D">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="GBc-Ex-w3q" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="" image="tab_editorial_active" id="bDX-3i-aP5"/>
+                    <tabBarItem key="tabBarItem" title="" image="tab_editorial_active" id="bDX-3i-aP5">
+                        <color key="badgeColor" name="YP White"/>
+                    </tabBarItem>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="1Bp-gU-9Ne">
                         <rect key="frame" x="0.0" y="118" width="393" height="54"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <color key="backgroundColor" name="YP Black"/>
                         <color key="tintColor" name="YP White"/>
                         <color key="barTintColor" name="YP White"/>
-                        <navigationBarAppearance key="standardAppearance"/>
+                        <navigationBarAppearance key="standardAppearance">
+                            <color key="backgroundColor" name="YP Black"/>
+                        </navigationBarAppearance>
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <connections>

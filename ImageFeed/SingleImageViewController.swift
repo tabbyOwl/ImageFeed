@@ -30,10 +30,13 @@ final class SingleImageViewController: UIViewController {
         super.viewDidLoad()
         setupButton()
         setupImage()
-        scrollView.minimumZoomScale = 0.25
-        scrollView.maximumZoomScale = 1.25
     }
-      
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        centerImage()
+    }
+    
     // MARK: - Private methods
     private func setupButton() {
         backButton.setTitle("", for: .normal)

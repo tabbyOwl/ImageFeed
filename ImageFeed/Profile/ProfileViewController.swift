@@ -8,12 +8,14 @@ import UIKit
 
 final class ProfileViewController: UIViewController {
     
+    // MARK: - Private properties
     private var profileImageView: UIImageView?
     private var nameLabel: UILabel?
     private var loginLabel: UILabel?
     private var descriptionLabel: UILabel?
     private var logoutButton: UIButton?
     
+    // MARK: - Life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -26,6 +28,7 @@ final class ProfileViewController: UIViewController {
         setupConstraints()
     }
     
+    // MARK: - Private methods
     private func setupImageView() {
         profileImageView = UIImageView()
         guard let profileImageView else { return }
@@ -76,7 +79,7 @@ final class ProfileViewController: UIViewController {
         view.addSubview(logoutButton)
     }
     
-    func setupConstraints() {
+    private func setupConstraints() {
         
         guard let profileImageView,
               let nameLabel,

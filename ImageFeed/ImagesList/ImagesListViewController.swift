@@ -8,6 +8,7 @@
 import UIKit
 
 final class ImagesListViewController: UIViewController {
+    
     // MARK: - @IBOutlets
     @IBOutlet private var tableView: UITableView!
     
@@ -40,7 +41,6 @@ final class ImagesListViewController: UIViewController {
             }
             
             let image = UIImage(named: photosName[indexPath.row])
-            _ = viewController.view
             viewController.image = image
         } else {
             super.prepare(for: segue, sender: sender)

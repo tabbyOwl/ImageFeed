@@ -6,19 +6,23 @@
 //
 import UIKit
 
-class AuthViewController: UIViewController {
+protocol AuthViewControllerDelegate: AnyObject {
+    func didAuthenticate(_ vc: AuthViewController)
+}
+
+final class AuthViewController: UIViewController {
     
+    //MARK: - Private properties
     private let showWebViewSegueIdentifier = "ShowWebView"
+    private let oauth2Service = OAuth2Service.shared
+    
+    //MARK: - Public properties
+    weak var delegate: AuthViewControllerDelegate?
+    
+    //MARK: - Life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         configureBackButton()
-    }
-    
-    private func configureBackButton() {
-        navigationController?.navigationBar.backIndicatorImage = UIImage(resource: .navBackButton)
-        navigationController?.navigationBar.backIndicatorTransitionMaskImage = UIImage(resource: .navBackButton)
-        navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-        navigationItem.backBarButtonItem?.tintColor = UIColor(resource: .ypBlack)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -34,14 +38,36 @@ class AuthViewController: UIViewController {
             super.prepare(for: segue, sender: sender)
         }
     }
+    
+    //MARK: - Private methods
+    private func configureBackButton() {
+        navigationController?.navigationBar.backIndicatorImage = UIImage(resource: .navBackButton)
+        navigationController?.navigationBar.backIndicatorTransitionMaskImage = UIImage(resource: .navBackButton)
+        navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+        navigationItem.backBarButtonItem?.tintColor = UIColor(resource: .ypBlack)
+    }
 }
-
+ //MARK: - WebViewViewControllerDelegate
 extension AuthViewController: WebViewViewControllerDelegate {
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
-        //TODO: process code
+        fetchOAuthToken(code) { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case .success:
+                self.delegate?.didAuthenticate(self)
+                vc.dismiss(animated: true)
+            case .failure:
+                break
+            }
+        }
     }
+}
 
-    func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
-        vc.dismiss(animated: true)
+//MARK: - fetchOAuthToken
+extension AuthViewController {
+    private func fetchOAuthToken(_ code: String, completion: @escaping (Result<String, Error>) -> Void) {
+        oauth2Service.fetch(code: code) { result in
+            completion(result)
+        }
     }
 }

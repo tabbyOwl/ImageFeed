@@ -6,6 +6,7 @@
 //
 import UIKit
 
+
 enum HTTPMethod: String {
     case get = "GET"
     case post = "POST"
@@ -18,10 +19,11 @@ final class OAuth2Service {
     static let shared = OAuth2Service()
     private init() {}
     
-    private let storage = OAuth2TokenStorage()
-    private let jsonDecoder = JSONDecoder()
+    private let storage = OAuth2TokenStorage.shared
+    private let decoder = SnakeCaseJSONDecoder()
     func fetch(code: String, completion: @escaping (Result<String, Error>) -> Void) {
         guard let request = makeOAuthTokenRequest(code: code) else {
+            print("Failed to create URLRequest with code: \(code)")
             completion(.failure(NetworkError.invalidRequest))
             return
         }
@@ -29,26 +31,30 @@ final class OAuth2Service {
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             
             if let error = error {
+                print("URLSession error: \(error.localizedDescription)")
                 completion(.failure(NetworkError.urlRequestError(error)))
                 return
             }
             
             if let response = response as? HTTPURLResponse, response.statusCode < 200 || response.statusCode >= 300 {
+                print("HTTP Error: Status code \(response.statusCode) from Unsplash")
                 completion(.failure(NetworkError.httpStatusCode(response.statusCode)))
                 return
             }
             
             guard let data = data else {
+                print("No data returned from the request")
                 completion(.failure(NetworkError.urlSessionError))
                 return
             }
             
             do {
-                let tokenResponse = try self.jsonDecoder.decode(OAuthTokenResponseBody.self, from: data)
+                let tokenResponse = try self.decoder.decode(OAuthTokenResponseBody.self, from: data)
                 self.storage.token = tokenResponse.accessToken
                 
                 completion(.success(tokenResponse.accessToken))
             } catch {
+                print("Decoding error: \(error.localizedDescription)")
                 completion(.failure(NetworkError.decodingError(error)))
             }
         }
@@ -57,6 +63,7 @@ final class OAuth2Service {
     
     private func makeOAuthTokenRequest(code: String) -> URLRequest? {
         guard var urlComponents = URLComponents(string: "https://unsplash.com/oauth/token") else {
+            print("Invalid URLComponents string for OAuth token request")
             return nil
         }
         
@@ -69,6 +76,7 @@ final class OAuth2Service {
         ]
         
         guard let authTokenUrl = urlComponents.url else {
+            print("Failed to create URL from URLComponents")
             return nil
         }
         

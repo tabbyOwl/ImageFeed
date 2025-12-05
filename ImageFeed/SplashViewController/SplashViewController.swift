@@ -9,7 +9,7 @@ import UIKit
 final class SplashViewController: UIViewController {
     
     //MARK: - Private properties
-    private let storage = OAuth2TokenStorage()
+    private let storage = OAuth2TokenStorage.shared
     private let showAuthenticationScreenSegueIdentifier = "ShowAuthenticationScreenSegueIdentifier"
     weak var delegate: AuthViewControllerDelegate?
     

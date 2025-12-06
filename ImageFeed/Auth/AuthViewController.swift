@@ -51,10 +51,10 @@ final class AuthViewController: UIViewController {
  //MARK: - WebViewViewControllerDelegate
 extension AuthViewController: WebViewViewControllerDelegate {
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
-        ProgressHUD.animate()
+        UIBlockingProgressHUD.show()
         fetchOAuthToken(code) { [weak self] result in
             DispatchQueue.main.async {
-                ProgressHUD.dismiss()
+                UIBlockingProgressHUD.dismiss()
                 guard let self else { return }
                 switch result {
                 case .success:

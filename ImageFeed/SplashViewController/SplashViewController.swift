@@ -12,12 +12,14 @@ final class SplashViewController: UIViewController {
     private let storage = OAuth2TokenStorage.shared
     private let showAuthenticationScreenSegueIdentifier = "ShowAuthenticationScreenSegueIdentifier"
     weak var delegate: AuthViewControllerDelegate?
+    private let profileService = ProfileService.shared
     
     //MARK: - Life cycle
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        if storage.token != nil {
+        if let token = storage.token {
+            fetchProfile(token: token)
             switchToTabBarController()
         } else {
             performSegue(withIdentifier: showAuthenticationScreenSegueIdentifier, sender: nil)
@@ -46,6 +48,23 @@ final class SplashViewController: UIViewController {
     }
     
     //MARK: - Private methods
+    private func fetchProfile(token: String) {
+            UIBlockingProgressHUD.show()
+            profileService.fetchProfile(token) { [weak self] result in
+                UIBlockingProgressHUD.dismiss()
+
+                guard let self else { return }
+
+                switch result {
+                case .success:
+                   self.switchToTabBarController()
+                case .failure:
+                    assertionFailure("Failed to load profile info")
+                    break
+                }
+            }
+        }
+    
     private func switchToTabBarController() {
         DispatchQueue.main.async {
             guard let window = UIApplication.shared.windows.first else {
@@ -63,8 +82,10 @@ final class SplashViewController: UIViewController {
 // MARK: -AuthViewControllerDelegate
 extension SplashViewController: AuthViewControllerDelegate {
     func didAuthenticate(_ vc: AuthViewController) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self] in
             vc.dismiss(animated: true)
+            guard let token = self?.storage.token else {return}
+            self?.fetchProfile(token: token)
         }
         switchToTabBarController()
     }

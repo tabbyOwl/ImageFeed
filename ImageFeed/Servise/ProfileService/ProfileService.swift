@@ -7,7 +7,13 @@
 import UIKit
 
 final class ProfileService {
+    static let shared = ProfileService()
     
+    private init(task: URLSessionTask? = nil) {
+        self.task = task
+    }
+    
+    private(set) var profile: Profile?
     private var task: URLSessionTask?
    
     func fetchProfile(_ token: String, completion: @escaping (Result<Profile, Error>) -> Void) {
@@ -23,13 +29,14 @@ final class ProfileService {
             case .success(let data):
                 do {
                     let profileResult = try JSONDecoder().decode(ProfileResult.self, from: data)
-
+                    
                     let profile = Profile(
                         username: profileResult.username,
                         name: profileResult.name,
                         loginName: "@\(profileResult.username)",
                         bio: profileResult.bio
                     )
+                    self?.profile = profile
                     completion(.success(profile))
                 } catch {
                     completion(.failure(error))

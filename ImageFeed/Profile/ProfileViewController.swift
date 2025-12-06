@@ -14,7 +14,6 @@ final class ProfileViewController: UIViewController {
     private var loginLabel: UILabel?
     private var descriptionLabel: UILabel?
     private var logoutButton: UIButton?
-    private var service: ProfileService?
     
     // MARK: - Life cycle
     override func viewDidLoad() {
@@ -28,31 +27,33 @@ final class ProfileViewController: UIViewController {
         setupLogoutButton()
         setupConstraints()
         
-        service = ProfileService()
+        if let profile = ProfileService.shared.profile {
+            updateProfileWith(profile: profile)
+        }
         
-        fetchData()
+    
         
     }
     
     // MARK: - Private methods
-    
-    private func fetchData() {
-        if let token = UserDefaults.standard.string(forKey: Constants.oAuthTokenUserDefaultsKey) {
-            service?.fetchProfile(token) { [weak self] result in
-                switch result {
-                case .success(let profile):
-                    self?.updateProfileWith(profile: profile)
-                case .failure(let error):
-                    print("Error: \(error)")
-                }
-            }
-        }
-    }
+//    
+//    private func fetchData() {
+//        if let token = UserDefaults.standard.string(forKey: Constants.oAuthTokenUserDefaultsKey) {
+//            service?.fetchProfile(token) { [weak self] result in
+//                switch result {
+//                case .success(let profile):
+//                    self?.updateProfileWith(profile: profile)
+//                case .failure(let error):
+//                    print("Error: \(error)")
+//                }
+//            }
+//        }
+//    }
     
     private func updateProfileWith(profile : Profile) {
-        nameLabel?.text = profile.name.isEmpty ? "Имя не указано": profile.name
-        loginLabel?.text = profile.loginName.isEmpty ? "@неизвестный_пользователь": profile.loginName
-        descriptionLabel?.text = (profile.bio?.isEmpty ?? true) ? "Профиль не заполнен": profile.bio
+        nameLabel?.text = profile.name
+        loginLabel?.text = profile.loginName
+        descriptionLabel?.text = profile.bio
     }
     
     private func setupBackground() {

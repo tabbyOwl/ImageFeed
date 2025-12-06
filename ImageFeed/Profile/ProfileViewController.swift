@@ -14,21 +14,50 @@ final class ProfileViewController: UIViewController {
     private var loginLabel: UILabel?
     private var descriptionLabel: UILabel?
     private var logoutButton: UIButton?
+    private var service: ProfileService?
     
     // MARK: - Life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        view.backgroundColor = .ypBlack
+
+        setupBackground()
         setupImageView()
         setupNameLabel()
         setupLoginLabel()
         setupDescriptionLabel()
         setupLogoutButton()
         setupConstraints()
+        
+        service = ProfileService()
+        
+        fetchData()
+        
     }
     
     // MARK: - Private methods
+    
+    private func fetchData() {
+        if let token = UserDefaults.standard.string(forKey: Constants.oAuthTokenUserDefaultsKey) {
+            service?.fetchProfile(token) { [weak self] result in
+                switch result {
+                case .success(let profile):
+                    self?.updateProfileWith(profile: profile)
+                case .failure(let error):
+                    print("Error: \(error)")
+                }
+            }
+        }
+    }
+    
+    private func updateProfileWith(profile : Profile) {
+        nameLabel?.text = profile.name.isEmpty ? "Имя не указано": profile.name
+        loginLabel?.text = profile.loginName.isEmpty ? "@неизвестный_пользователь": profile.loginName
+        descriptionLabel?.text = (profile.bio?.isEmpty ?? true) ? "Профиль не заполнен": profile.bio
+    }
+    
+    private func setupBackground() {
+        view.backgroundColor = .ypBlack
+    }
     private func setupImageView() {
         profileImageView = UIImageView()
         guard let profileImageView else { return }

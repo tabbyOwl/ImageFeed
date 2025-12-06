@@ -18,4 +18,5 @@ enum Constants {
         }
         return url
     }()
+    static let oAuthTokenUserDefaultsKey = "OAuthToken"
 }

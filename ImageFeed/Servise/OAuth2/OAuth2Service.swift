@@ -6,14 +6,6 @@
 //
 import UIKit
 
-
-enum HTTPMethod: String {
-    case get = "GET"
-    case post = "POST"
-    case put = "PUT"
-    case delete = "DELETE"
-}
-
 final class OAuth2Service {
     
     static let shared = OAuth2Service()

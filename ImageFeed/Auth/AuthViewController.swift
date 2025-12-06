@@ -5,6 +5,7 @@
 //  Created by Svetlana on 2025/12/3.
 //
 import UIKit
+import ProgressHUD
 
 protocol AuthViewControllerDelegate: AnyObject {
     func didAuthenticate(_ vc: AuthViewController)
@@ -50,8 +51,10 @@ final class AuthViewController: UIViewController {
  //MARK: - WebViewViewControllerDelegate
 extension AuthViewController: WebViewViewControllerDelegate {
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
+        ProgressHUD.animate()
         fetchOAuthToken(code) { [weak self] result in
             DispatchQueue.main.async {
+                ProgressHUD.dismiss()
                 guard let self else { return }
                 switch result {
                 case .success:

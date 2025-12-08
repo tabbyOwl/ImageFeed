@@ -47,6 +47,17 @@ final class AuthViewController: UIViewController {
         navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         navigationItem.backBarButtonItem?.tintColor = UIColor(resource: .ypBlack)
     }
+    
+    private func showAuthErrorAlert() {
+        let alert = UIAlertController(
+            title: "Что-то пошло не так",
+            message: "Не удалось войти в систему",
+            preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: "Ок", style: .default)
+        alert.addAction(action)
+        self.present(alert, animated: true)
+    }
 }
  //MARK: - WebViewViewControllerDelegate
 extension AuthViewController: WebViewViewControllerDelegate {
@@ -61,6 +72,7 @@ extension AuthViewController: WebViewViewControllerDelegate {
                     self.delegate?.didAuthenticate(self)
                     vc.dismiss(animated: true)
                 case .failure:
+                    self.showAuthErrorAlert()
                     break
                 }
             }
@@ -71,7 +83,7 @@ extension AuthViewController: WebViewViewControllerDelegate {
 //MARK: - fetchOAuthToken
 extension AuthViewController {
     private func fetchOAuthToken(_ code: String, completion: @escaping (Result<String, Error>) -> Void) {
-        oauth2Service.fetch(code: code) { result in
+        oauth2Service.fetchOauthToken(code: code) { result in
             completion(result)
         }
     }

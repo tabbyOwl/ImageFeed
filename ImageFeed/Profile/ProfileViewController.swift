@@ -5,6 +5,7 @@
 //  Created by Svetlana on 2025/12/1.
 //
 import UIKit
+import Kingfisher
 
 final class ProfileViewController: UIViewController {
     
@@ -14,11 +15,66 @@ final class ProfileViewController: UIViewController {
     private var loginLabel: UILabel?
     private var descriptionLabel: UILabel?
     private var logoutButton: UIButton?
+    private var profileImageServiceObserver: NSObjectProtocol?
     
     // MARK: - Life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupUI()
+        
+        if let profile = ProfileService.shared.profile {
+            updateProfileWith(profile: profile)
+        }
+        
+        profileImageServiceObserver = NotificationCenter.default
+            .addObserver(
+                forName: ProfileImageService.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self = self else { return }
+                self.updateAvatar()
+            }
+        updateAvatar()
+    }
+    
+    // MARK: - Private methods
+    private func updateAvatar() {
+        guard
+            let profileImageURL = ProfileImageService.shared.avatarURL,
+            let imageUrl = URL(string: profileImageURL)
+        else { return }
 
+        print("imageUrl: \(imageUrl)")
+
+        let placeholderImage = UIImage(systemName: "person.circle.fill")?
+            .withTintColor(.lightGray, renderingMode: .alwaysOriginal)
+            .withConfiguration(UIImage.SymbolConfiguration(pointSize: 70, weight: .regular, scale: .large))
+        guard let profileImageView = profileImageView else { return }
+        let processor = RoundCornerImageProcessor(cornerRadius: 35)
+        profileImageView.kf.indicatorType = .activity
+        profileImageView.kf.setImage(
+            with: imageUrl,
+            placeholder: placeholderImage,
+            options: [
+                .processor(processor),
+                .scaleFactor(UIScreen.main.scale),
+                .cacheOriginalImage,
+                .forceRefresh
+            ]) { result in
+
+                switch result {
+                case .success(let value):
+                    print(value.image)
+                    print(value.cacheType)
+                    print(value.source)
+                case .failure(let error):
+                    print(error)
+                }
+            }
+    }
+    
+    private func setupUI() {
         setupBackground()
         setupImageView()
         setupNameLabel()
@@ -26,29 +82,7 @@ final class ProfileViewController: UIViewController {
         setupDescriptionLabel()
         setupLogoutButton()
         setupConstraints()
-        
-        if let profile = ProfileService.shared.profile {
-            updateProfileWith(profile: profile)
-        }
-        
-    
-        
     }
-    
-    // MARK: - Private methods
-//    
-//    private func fetchData() {
-//        if let token = UserDefaults.standard.string(forKey: Constants.oAuthTokenUserDefaultsKey) {
-//            service?.fetchProfile(token) { [weak self] result in
-//                switch result {
-//                case .success(let profile):
-//                    self?.updateProfileWith(profile: profile)
-//                case .failure(let error):
-//                    print("Error: \(error)")
-//                }
-//            }
-//        }
-//    }
     
     private func updateProfileWith(profile : Profile) {
         nameLabel?.text = profile.name
@@ -63,10 +97,9 @@ final class ProfileViewController: UIViewController {
         profileImageView = UIImageView()
         guard let profileImageView else { return }
         profileImageView.translatesAutoresizingMaskIntoConstraints = false
-        profileImageView.layer.cornerRadius = profileImageView.frame.width/2
+        //profileImageView.layer.cornerRadius = profileImageView.frame.width/2
         profileImageView.clipsToBounds = true
         profileImageView.contentMode = .scaleAspectFill
-        profileImageView.image = UIImage(resource: .avatar)
         view.addSubview(profileImageView)
     }
     
@@ -76,17 +109,15 @@ final class ProfileViewController: UIViewController {
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.textColor = .ypWhite
         nameLabel.font = Fonts.sfProTextBold23
-        nameLabel.text = "Екатерина Новикова"
         view.addSubview(nameLabel)
     }
-        
+    
     private func setupLoginLabel() {
         loginLabel = UILabel()
         guard let loginLabel else { return }
         loginLabel.translatesAutoresizingMaskIntoConstraints = false
         loginLabel.textColor = .ypGray
         loginLabel.font = Fonts.sfProTextRegular13
-        loginLabel.text = "@ekaterina.nov"
         view.addSubview(loginLabel)
     }
     
@@ -96,7 +127,6 @@ final class ProfileViewController: UIViewController {
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         descriptionLabel.textColor = .ypWhite
         descriptionLabel.font = Fonts.sfProTextRegular13
-        descriptionLabel.text = "Hello, world!"
         view.addSubview(descriptionLabel)
     }
     

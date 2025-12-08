@@ -15,38 +15,37 @@ final class ProfileService {
     
     private(set) var profile: Profile?
     private var task: URLSessionTask?
-   
+    private var decoder = SnakeCaseJSONDecoder()
+    
     func fetchProfile(_ token: String, completion: @escaping (Result<Profile, Error>) -> Void) {
         task?.cancel()
-
         guard let request = makeProfileRequest(token: token) else {
             completion(.failure(URLError(.badURL)))
             return
         }
 
-        let task = URLSession.shared.data(for: request) { [weak self] result in
+        let task = URLSession.shared.objectTask(for: request) { [weak self] (result: Result<ProfileResult, Error>) in
             switch result {
             case .success(let data):
-                do {
-                    let profileResult = try JSONDecoder().decode(ProfileResult.self, from: data)
+                    guard let self = self else {
+                        completion(.failure(NetworkError.invalidRequest))
+                        return
+                    }
                     
                     let profile = Profile(
-                        username: profileResult.username,
-                        name: profileResult.name,
-                        loginName: "@\(profileResult.username)",
-                        bio: profileResult.bio
+                        username: data.username,
+                        name: data.name,
+                        loginName: "@\(data.username)",
+                        bio: data.bio
                     )
-                    self?.profile = profile
+                    self.profile = profile
                     completion(.success(profile))
-                } catch {
-                    completion(.failure(error))
-                }
             case .failure(let error):
+                print("[ProfileService]: error \(error)")
                 completion(.failure(error))
             }
             self?.task = nil
         }
-
         self.task = task
         task.resume()
     }

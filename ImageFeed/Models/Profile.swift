@@ -4,6 +4,7 @@
 //
 //  Created by Svetlana on 2025/12/6.
 //
+import Foundation
 
 struct Profile {
     let username: String

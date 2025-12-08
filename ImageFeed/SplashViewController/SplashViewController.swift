@@ -13,6 +13,7 @@ final class SplashViewController: UIViewController {
     private let showAuthenticationScreenSegueIdentifier = "ShowAuthenticationScreenSegueIdentifier"
     weak var delegate: AuthViewControllerDelegate?
     private let profileService = ProfileService.shared
+    private let profileImageService = ProfileImageService.shared
     
     //MARK: - Life cycle
     override func viewDidAppear(_ animated: Bool) {
@@ -50,14 +51,13 @@ final class SplashViewController: UIViewController {
     //MARK: - Private methods
     private func fetchProfile(token: String) {
             UIBlockingProgressHUD.show()
-            profileService.fetchProfile(token) { [weak self] result in
+            profileService.fetchProfile(token) { [strongSelf = self] result in
                 UIBlockingProgressHUD.dismiss()
-
-                guard let self else { return }
-
+                
                 switch result {
-                case .success:
-                   self.switchToTabBarController()
+                case .success(let profile):
+                    strongSelf.profileImageService.fetchProfileImageURL(username: profile.username) {_ in }
+                    strongSelf.switchToTabBarController()
                 case .failure:
                     assertionFailure("Failed to load profile info")
                     break

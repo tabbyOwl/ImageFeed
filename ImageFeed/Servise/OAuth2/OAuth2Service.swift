@@ -18,7 +18,7 @@ final class OAuth2Service {
     private var task: URLSessionTask?
     private var lastCode: String?
     
-    func fetch(code: String, completion: @escaping (Result<String, Error>) -> Void) {
+    func fetchOauthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread)
         guard lastCode != code else {
             completion(.failure(NetworkError.invalidRequest))
@@ -34,46 +34,22 @@ final class OAuth2Service {
             return
         }
         
-        let task = urlSession.dataTask(with: request) { [weak self] data, response, error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    print("URLSession error: \(error.localizedDescription)")
-                    completion(.failure(NetworkError.urlRequestError(error)))
-                    return
-                }
-                
-                if let response = response as? HTTPURLResponse, response.statusCode < 200 || response.statusCode >= 300 {
-                    print("HTTP Error: Status code \(response.statusCode) from Unsplash")
-                    completion(.failure(NetworkError.httpStatusCode(response.statusCode)))
-                    return
-                }
-                
-                guard let data = data else {
-                    print("No data returned from the request")
-                    completion(.failure(NetworkError.urlSessionError))
-                    return
-                }
-                
-                do {
-                    guard let self = self else {
-                        completion(.failure(NetworkError.invalidRequest))
-                        return
-                    }
-                    let tokenResponse = try self.decoder.decode(OAuthTokenResponseBody.self, from: data)
-                    self.storage.token = tokenResponse.accessToken
+        let task = urlSession.objectTask(for: request) { [weak self]
+                (result: Result<OAuthTokenResponseBody, Error>) in
+                switch result {
+                case .success(let body):
+                    self?.storage.token = body.accessToken
+                    self?.lastCode = nil
+                    self?.task = nil
+                    completion(.success(body.accessToken))
                     
-                    completion(.success(tokenResponse.accessToken))
-                } catch {
-                    print("Decoding error: \(error.localizedDescription)")
-                    completion(.failure(NetworkError.decodingError(error)))
+                case .failure(let error):
+                    print("[OAuth2Service]: error \(error)")
+                    completion(.failure(error))
                 }
-                
-                self?.task = nil
-                self?.lastCode = nil
             }
-        }
-        self.task = task
-        task.resume()
+            self.task = task
+            task.resume()
     }
     
     private func makeOAuthTokenRequest(code: String) -> URLRequest? {

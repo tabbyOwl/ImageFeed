@@ -17,36 +17,82 @@ protocol WebViewViewControllerDelegate: AnyObject {
 }
 
 final class WebViewViewController: UIViewController {
-    
-    //MARK: - @IBOutlets
-    @IBOutlet weak var progressView: UIProgressView!
-    @IBOutlet private var webView: WKWebView!
     weak var delegate: WebViewViewControllerDelegate?
     
+    //MARK: - @IBOutlets
+    private let progressView = UIProgressView()
+    private var webView = WKWebView()
     private var estimatedProgressObservation: NSKeyValueObservation?
     
     //MARK: - Life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        webView.navigationDelegate = self
         
+        setupUI()
+        setupBackButton()
         loadAuthView()
         
         estimatedProgressObservation = webView.observe(
-                    \.estimatedProgress,
-                    options: [],
-                    changeHandler: { [weak self] _, _ in
-                        guard let self = self else { return }
-                        self.updateProgress()
-                    })
+            \.estimatedProgress,
+             options: [],
+             changeHandler: { [weak self] _, _ in
+                 guard let self = self else { return }
+                 self.updateProgress()
+             })
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         updateProgress()
     }
- 
+    
     //MARK: - Private methods
+    private func setupUI() {
+        setupWebView()
+        setupProgressView()
+        setupConstraints()
+        setupBackButton()
+    }
+    
+    private func setupWebView() {
+        webView.translatesAutoresizingMaskIntoConstraints = false
+        webView.navigationDelegate = self
+        view.addSubview(webView)
+    }
+    
+    private func setupProgressView() {
+        progressView.progressTintColor = .ypBlack
+        progressView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(progressView)
+    }
+    
+    private func setupBackButton() {
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            image: UIImage(resource: .navBackButton),
+            style: .plain,
+            target: self,
+            action: #selector(didTapBack)
+        )
+    }
+    
+    @objc private func didTapBack() {
+        dismiss(animated: true)
+    }
+    
+    private func setupConstraints() {
+        NSLayoutConstraint.activate([
+            webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            webView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            webView.topAnchor.constraint(equalTo: view.topAnchor),
+            webView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            progressView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            progressView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            progressView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            progressView.heightAnchor.constraint(equalToConstant: 4)
+        ])
+    }
+    
     private func updateProgress() {
         progressView.progress = Float(webView.estimatedProgress)
         progressView.isHidden = fabs(webView.estimatedProgress - 1.0) <= 0.0001
@@ -70,7 +116,6 @@ final class WebViewViewController: UIViewController {
         let request = URLRequest(url: url)
         webView.load(request)
     }
-    
 }
 
 //MARK: -WKNavigationDelegate

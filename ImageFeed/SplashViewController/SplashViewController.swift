@@ -9,6 +9,7 @@ import UIKit
 final class SplashViewController: UIViewController {
     
     //MARK: - Private properties
+    private var imageView = UIImageView()
     private let storage = OAuth2TokenStorage.shared
     private let showAuthenticationScreenSegueIdentifier = "ShowAuthenticationScreenSegueIdentifier"
     weak var delegate: AuthViewControllerDelegate?
@@ -18,12 +19,16 @@ final class SplashViewController: UIViewController {
     //MARK: - Life cycle
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
+        setupUI()
         if let token = storage.token {
             fetchProfile(token: token)
+            
             switchToTabBarController()
         } else {
-            performSegue(withIdentifier: showAuthenticationScreenSegueIdentifier, sender: nil)
+            let authViewController = AuthViewController()
+            authViewController.delegate = self
+            authViewController.modalPresentationStyle = .fullScreen
+            present(authViewController, animated: true)
         }
     }
     
@@ -32,34 +37,42 @@ final class SplashViewController: UIViewController {
         setNeedsStatusBarAppearanceUpdate()
     }
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == showAuthenticationScreenSegueIdentifier {
-            
-            guard
-                let navigationController = segue.destination as? UINavigationController,
-                let viewController = navigationController.viewControllers.first as? AuthViewController
-            else {
-                assertionFailure("Failed to prepare for \(showAuthenticationScreenSegueIdentifier)")
-                return
-            }
-            viewController.delegate = self
-        } else {
-            super.prepare(for: segue, sender: sender)
-        }
+    //MARK: - Private methods
+    private func setupUI() {
+        view.backgroundColor = .ypBlack
+        setupImage()
+        setupConstraints()
     }
     
-    //MARK: - Private methods
+    private func setupImage() {
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = .scaleAspectFit
+        imageView.image = UIImage(resource: .vector)
+        view.addSubview(imageView)
+    }
+    
+    private func setupConstraints() {
+        NSLayoutConstraint.activate([
+            imageView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            imageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            imageView.widthAnchor.constraint(equalToConstant: 75),
+            imageView.heightAnchor.constraint(equalToConstant: 77)
+            ])
+    }
+    
     private func fetchProfile(token: String) {
             UIBlockingProgressHUD.show()
-            profileService.fetchProfile(token) { [strongSelf = self] result in
+            profileService.fetchProfile(token) { [weak self] result in
                 UIBlockingProgressHUD.dismiss()
+                
+                guard let self else { return }
                 
                 switch result {
                 case .success(let profile):
-                    strongSelf.profileImageService.fetchProfileImageURL(username: profile.username) {_ in }
-                    strongSelf.switchToTabBarController()
+                    self.profileImageService.fetchProfileImageURL(username: profile.username) {_ in }
+                    self.switchToTabBarController()
                 case .failure:
-                    assertionFailure("Failed to load profile info")
+                    print("Failed to load profile info")
                     break
                 }
             }
@@ -67,14 +80,11 @@ final class SplashViewController: UIViewController {
     
     private func switchToTabBarController() {
         DispatchQueue.main.async {
-            guard let window = UIApplication.shared.windows.first else {
-                assertionFailure("Invalid window configuration")
-                return
-            }
-            
-            let tabBarController = UIStoryboard(name: "Main", bundle: .main)
-                .instantiateViewController(withIdentifier: "TabBarViewController")
-            window.rootViewController = tabBarController
+            let tabBarController = TabBarController()
+            tabBarController.modalPresentationStyle = .fullScreen
+            let navigationVC = UINavigationController(rootViewController: tabBarController)
+            navigationVC.modalPresentationStyle = .fullScreen
+            self.present(navigationVC, animated: true)
         }
     }
 }

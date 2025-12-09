@@ -10,41 +10,19 @@ import UIKit
 final class ImagesListViewController: UIViewController {
     
     // MARK: - @IBOutlets
-    @IBOutlet private var tableView: UITableView!
+    private let tableView = UITableView()
     
     // MARK: - Private properties
-    private let photosName: [String] = Array(0..<20).map{ "\($0)" }
+    private let photosNames: [String] = Array(0..<20).map{ "\($0)" }
     private let showSingleImageSegueIdentifier = "ShowSingleImage"
-    
-    private lazy var dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .long
-        formatter.timeStyle = .none
-        return formatter
-    }()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupDataSourceAndDelegate()
+        
         setupTable()
-    }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == showSingleImageSegueIdentifier {
-            guard
-                let viewController = segue.destination as? SingleImageViewController,
-                let indexPath = sender as? IndexPath
-            else {
-                assertionFailure("Invalid segue destination")
-                return
-            }
-            
-            let image = UIImage(named: photosName[indexPath.row])
-            viewController.image = image
-        } else {
-            super.prepare(for: segue, sender: sender)
-        }
+        setupConstraints()
     }
     
     // MARK: - Private methods
@@ -54,59 +32,37 @@ final class ImagesListViewController: UIViewController {
     }
     
     private func setupTable() {
+        tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)
+        tableView.backgroundColor = .ypBlack
+        tableView.register(ImagesListCell.self, forCellReuseIdentifier: ImagesListCell.reuseIdentifier)
+        view.addSubview(tableView)
     }
     
-    private func addGradientToLabel(_ view: UIView) {
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.frame = view.bounds
-        
-        gradientLayer.colors = [
-            UIColor(red: 26/255, green: 27/255, blue: 34/255, alpha: 0.5).cgColor,
-            UIColor(red: 26/255, green: 27/255, blue: 34/255, alpha: 0).cgColor
-        ]
-        gradientLayer.locations = [0.0, 0.7]
-        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
-        gradientLayer.endPoint = CGPoint(x: 1, y: 0)
-        
-        view.layer.insertSublayer(gradientLayer, at: 0)
-    }
-}
-
-// MARK: - configCell
-extension ImagesListViewController {
-    func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
-        guard let image = UIImage(named: String(indexPath.row)) else {
-            return
-        }
-        cell.imageCellView.image = image
-        let date = dateFormatter.string(from: Date())
-        cell.dateLabel.text = date
-        addGradientToLabel(cell.gradientView)
-        
-        let isLiked = indexPath.row % 2 == 0
-        let likeImage = isLiked ? UIImage(resource: .active) : UIImage(resource: .noActive)
-        cell.likeButton.setTitle("", for: .normal)
-        cell.likeButton.setImage(likeImage, for: .normal)
+    private func setupConstraints() {
+        NSLayoutConstraint.activate([
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
     }
 }
 
 // MARK: - UITableViewDataSource
 extension ImagesListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        photosName.count
+        photosNames.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: ImagesListCell.reuseIdentifier)
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: ImagesListCell.reuseIdentifier, for: indexPath) as? ImagesListCell else {return UITableViewCell()}
+        let photoName = self.photosNames[indexPath.row]
+        cell.delegate = self
+        cell.configure(with: photoName)
         
-        guard let imageListCell = cell as? ImagesListCell else {
-            return UITableViewCell()
-        }
-        
-        configCell(for: imageListCell, with: indexPath)
-        return imageListCell
+        return cell
         
     }
 }
@@ -114,11 +70,15 @@ extension ImagesListViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension ImagesListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: showSingleImageSegueIdentifier, sender: indexPath)
+        let singleImageVC = SingleImageViewController()
+        let photosName = photosNames[indexPath.row]
+        let image = UIImage(named: photosName)
+        singleImageVC.image = image
+        navigationController?.pushViewController(singleImageVC, animated: true)
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        guard let image = UIImage(named: photosName[indexPath.row]) else {
+        guard let image = UIImage(named: photosNames[indexPath.row]) else {
             return 0
         }
         
@@ -128,5 +88,14 @@ extension ImagesListViewController: UITableViewDelegate {
         let scale = imageViewWidth / imageWidth
         let cellHeight = image.size.height * scale + imageInsets.top + imageInsets.bottom
         return cellHeight
+    }
+}
+
+extension ImagesListViewController: ImagesListCellDelegate {
+    func imagesListCellDidTapButton(_ cell: ImagesListCell) {
+        guard let indexPath = tableView.indexPath(for: cell) else { return }
+        let isLiked = indexPath.row % 2 == 0
+        cell.setLike(isLiked: isLiked)
+        tableView.reloadRows(at: [indexPath], with: .automatic)
     }
 }

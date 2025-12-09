@@ -5,6 +5,7 @@
 //  Created by Svetlana on 2025/12/7.
 //
 import UIKit
+import SwiftKeychainWrapper
 
 final class ProfileImageService {
     static let shared = ProfileImageService()
@@ -20,7 +21,7 @@ final class ProfileImageService {
     
     func fetchProfileImageURL(username: String, _ completion: @escaping (Result<String, Error>) -> Void) {
         task?.cancel()
-        guard let token = UserDefaults.standard.string(forKey: Constants.oAuthTokenUserDefaultsKey) else {
+        guard let token = KeychainWrapper.standard.string(forKey: Constants.oAuthTokenKey) else {
             print("Failed to get token from storage")
             completion(.failure(NetworkError.invalidToken))
             return }

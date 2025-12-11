@@ -5,21 +5,43 @@
 //  Created by Svetlana on 2025/12/1.
 //
 import UIKit
+import Kingfisher
 
 final class ProfileViewController: UIViewController {
     
     // MARK: - Private properties
-    private var profileImageView: UIImageView?
-    private var nameLabel: UILabel?
-    private var loginLabel: UILabel?
-    private var descriptionLabel: UILabel?
-    private var logoutButton: UIButton?
+    private let profileImageView = UIImageView()
+    private let nameLabel =  UILabel()
+    private let loginLabel = UILabel()
+    private lazy var descriptionLabel = UILabel()
+    private let logoutButton = UIButton()
+    private var profileImageServiceObserver: NSObjectProtocol?
     
     // MARK: - Life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupUI()
         
-        view.backgroundColor = .ypBlack
+        if let profile = ProfileService.shared.profile {
+            updateProfileWith(profile: profile)
+        }
+        
+        profileImageServiceObserver = NotificationCenter.default
+            .addObserver(
+                forName: ProfileImageService.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self = self else { return }
+                self.updateAvatar()
+            }
+        updateAvatar()
+    }
+    
+    
+    // MARK: - Private methods
+    private func setupUI() {
+        setupBackground()
         setupImageView()
         setupNameLabel()
         setupLoginLabel()
@@ -28,51 +50,40 @@ final class ProfileViewController: UIViewController {
         setupConstraints()
     }
     
-    // MARK: - Private methods
+    private func setupBackground() {
+        view.backgroundColor = .ypBlack
+    }
+    
     private func setupImageView() {
-        profileImageView = UIImageView()
-        guard let profileImageView else { return }
         profileImageView.translatesAutoresizingMaskIntoConstraints = false
         profileImageView.layer.cornerRadius = profileImageView.frame.width/2
         profileImageView.clipsToBounds = true
         profileImageView.contentMode = .scaleAspectFill
-        profileImageView.image = UIImage(resource: .avatar)
         view.addSubview(profileImageView)
     }
     
     private func setupNameLabel() {
-        nameLabel = UILabel()
-        guard let nameLabel else { return }
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.textColor = .ypWhite
         nameLabel.font = Fonts.sfProTextBold23
-        nameLabel.text = "Екатерина Новикова"
         view.addSubview(nameLabel)
     }
-        
+    
     private func setupLoginLabel() {
-        loginLabel = UILabel()
-        guard let loginLabel else { return }
         loginLabel.translatesAutoresizingMaskIntoConstraints = false
         loginLabel.textColor = .ypGray
         loginLabel.font = Fonts.sfProTextRegular13
-        loginLabel.text = "@ekaterina.nov"
         view.addSubview(loginLabel)
     }
     
     private func setupDescriptionLabel() {
-        descriptionLabel = UILabel()
-        guard let descriptionLabel else { return }
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         descriptionLabel.textColor = .ypWhite
         descriptionLabel.font = Fonts.sfProTextRegular13
-        descriptionLabel.text = "Hello, world!"
         view.addSubview(descriptionLabel)
     }
     
     @objc private func setupLogoutButton() {
-        logoutButton = UIButton()
-        guard let logoutButton else { return }
         logoutButton.translatesAutoresizingMaskIntoConstraints = false
         logoutButton.setImage(UIImage(resource: .exit), for: .normal)
         logoutButton.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
@@ -80,13 +91,6 @@ final class ProfileViewController: UIViewController {
     }
     
     private func setupConstraints() {
-        
-        guard let profileImageView,
-              let nameLabel,
-              let loginLabel,
-              let descriptionLabel,
-              let logoutButton else { return }
-        
         NSLayoutConstraint.activate([
             profileImageView.topAnchor.constraint(equalTo: view.topAnchor, constant: 76),
             profileImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
@@ -107,6 +111,46 @@ final class ProfileViewController: UIViewController {
             logoutButton.widthAnchor.constraint(equalToConstant: 44),
             logoutButton.heightAnchor.constraint(equalToConstant: 44)
         ])
+    }
+    
+    private func updateAvatar() {
+        guard
+            let profileImageURL = ProfileImageService.shared.avatarURL,
+            let imageUrl = URL(string: profileImageURL)
+        else { return }
+        
+        print("imageUrl: \(imageUrl)")
+        
+        let placeholderImage = UIImage(systemName: "person.circle.fill")?
+            .withTintColor(.lightGray, renderingMode: .alwaysOriginal)
+            .withConfiguration(UIImage.SymbolConfiguration(pointSize: 70, weight: .regular, scale: .large))
+        let processor = RoundCornerImageProcessor(cornerRadius: 35)
+        profileImageView.kf.indicatorType = .activity
+        profileImageView.kf.setImage(
+            with: imageUrl,
+            placeholder: placeholderImage,
+            options: [
+                .processor(processor),
+                .scaleFactor(UIScreen.main.scale),
+                .cacheOriginalImage,
+                .forceRefresh
+            ]) { result in
+                
+                switch result {
+                case .success(let value):
+                    print(value.image)
+                    print(value.cacheType)
+                    print(value.source)
+                case .failure(let error):
+                    print(error)
+                }
+            }
+    }
+    
+    private func updateProfileWith(profile : Profile) {
+        nameLabel.text = profile.name
+        loginLabel.text = profile.loginName
+        descriptionLabel.text = profile.bio
     }
     
     @objc private func didTapLogoutButton() {

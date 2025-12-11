@@ -12,4 +12,5 @@ struct Fonts {
     
     static let sfProTextRegularFontName = "SFProText-Regular"
     static let sfProTextRegular13 = UIFont(name: sfProTextRegularFontName, size: 13)
+    static let sfProTextRegular17 = UIFont(name: sfProTextRegularFontName, size: 17)
 }

@@ -57,26 +57,26 @@ final class SplashViewController: UIViewController {
             imageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             imageView.widthAnchor.constraint(equalToConstant: 75),
             imageView.heightAnchor.constraint(equalToConstant: 77)
-            ])
+        ])
     }
     
     private func fetchProfile(token: String) {
-            UIBlockingProgressHUD.show()
-            profileService.fetchProfile(token) { [weak self] result in
-                UIBlockingProgressHUD.dismiss()
-                
-                guard let self else { return }
-                
-                switch result {
-                case .success(let profile):
-                    self.profileImageService.fetchProfileImageURL(username: profile.username) {_ in }
-                    self.switchToTabBarController()
-                case .failure:
-                    print("Failed to load profile info")
-                    break
-                }
+        UIBlockingProgressHUD.show()
+        profileService.fetchProfile(token) { [weak self] result in
+            UIBlockingProgressHUD.dismiss()
+            
+            guard let self else { return }
+            
+            switch result {
+            case .success(let profile):
+                self.profileImageService.fetchProfileImageURL(username: profile.username) {_ in }
+                self.switchToTabBarController()
+            case .failure:
+                print("Failed to load profile info")
+                break
             }
         }
+    }
     
     private func switchToTabBarController() {
         DispatchQueue.main.async {

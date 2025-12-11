@@ -8,11 +8,8 @@
 import UIKit
 
 final class ImagesListViewController: UIViewController {
-    
-    // MARK: - @IBOutlets
-    private let tableView = UITableView()
-    
     // MARK: - Private properties
+    private let tableView = UITableView()
     private let photosNames: [String] = Array(0..<20).map{ "\($0)" }
     private let showSingleImageSegueIdentifier = "ShowSingleImage"
     

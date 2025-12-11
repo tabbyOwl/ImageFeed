@@ -24,7 +24,7 @@ final class OAuth2Service {
             completion(.failure(NetworkError.invalidRequest))
             return
         }
-
+        
         task?.cancel()
         lastCode = code
         
@@ -35,21 +35,21 @@ final class OAuth2Service {
         }
         
         let task = urlSession.objectTask(for: request) { [weak self]
-                (result: Result<OAuthTokenResponseBody, Error>) in
-                switch result {
-                case .success(let body):
-                    self?.storage.token = body.accessToken
-                    self?.lastCode = nil
-                    self?.task = nil
-                    completion(.success(body.accessToken))
-                    
-                case .failure(let error):
-                    print("[OAuth2Service]: error \(error)")
-                    completion(.failure(error))
-                }
+            (result: Result<OAuthTokenResponseBody, Error>) in
+            switch result {
+            case .success(let body):
+                self?.storage.token = body.accessToken
+                self?.lastCode = nil
+                self?.task = nil
+                completion(.success(body.accessToken))
+                
+            case .failure(let error):
+                print("[OAuth2Service]: error \(error)")
+                completion(.failure(error))
             }
-            self.task = task
-            task.resume()
+        }
+        self.task = task
+        task.resume()
     }
     
     private func makeOAuthTokenRequest(code: String) -> URLRequest? {

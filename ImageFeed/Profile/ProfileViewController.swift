@@ -13,7 +13,7 @@ final class ProfileViewController: UIViewController {
     private let profileImageView = UIImageView()
     private let nameLabel =  UILabel()
     private let loginLabel = UILabel()
-    private let descriptionLabel = UILabel()
+    private lazy var descriptionLabel = UILabel()
     private let logoutButton = UIButton()
     private var profileImageServiceObserver: NSObjectProtocol?
     
@@ -56,7 +56,7 @@ final class ProfileViewController: UIViewController {
     
     private func setupImageView() {
         profileImageView.translatesAutoresizingMaskIntoConstraints = false
-    profileImageView.layer.cornerRadius = profileImageView.frame.width/2
+        profileImageView.layer.cornerRadius = profileImageView.frame.width/2
         profileImageView.clipsToBounds = true
         profileImageView.contentMode = .scaleAspectFill
         view.addSubview(profileImageView)
@@ -118,9 +118,9 @@ final class ProfileViewController: UIViewController {
             let profileImageURL = ProfileImageService.shared.avatarURL,
             let imageUrl = URL(string: profileImageURL)
         else { return }
-
+        
         print("imageUrl: \(imageUrl)")
-
+        
         let placeholderImage = UIImage(systemName: "person.circle.fill")?
             .withTintColor(.lightGray, renderingMode: .alwaysOriginal)
             .withConfiguration(UIImage.SymbolConfiguration(pointSize: 70, weight: .regular, scale: .large))
@@ -135,7 +135,7 @@ final class ProfileViewController: UIViewController {
                 .cacheOriginalImage,
                 .forceRefresh
             ]) { result in
-
+                
                 switch result {
                 case .success(let value):
                     print(value.image)

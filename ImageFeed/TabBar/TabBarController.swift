@@ -10,7 +10,7 @@ import UIKit
 final class TabBarController: UITabBarController {
     
     override func viewDidLoad() {
-      super.viewDidLoad()
+        super.viewDidLoad()
         setupTabBar()
     }
     
@@ -25,18 +25,18 @@ final class TabBarController: UITabBarController {
         let imagesListViewController = ImagesListViewController()
         
         imagesListViewController.tabBarItem = UITabBarItem(
-                       title: "",
-                       image: UIImage(resource: .tabEditorialActive),
-                       selectedImage: nil
-                   )
+            title: "",
+            image: UIImage(resource: .tabEditorialActive),
+            selectedImage: nil
+        )
         
         let profileViewController = ProfileViewController()
         
         profileViewController.tabBarItem = UITabBarItem(
-                       title: "",
-                       image: UIImage(resource: .tabProfileActive),
-                       selectedImage: nil
-                   )
+            title: "",
+            image: UIImage(resource: .tabProfileActive),
+            selectedImage: nil
+        )
         
         self.viewControllers = [imagesListViewController, profileViewController]
     }

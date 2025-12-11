@@ -71,7 +71,7 @@ final class AuthViewController: UIViewController {
             enterButton.heightAnchor.constraint(equalToConstant: 48)
         ])
     }
-
+    
     private func showAuthErrorAlert() {
         let alert = UIAlertController(
             title: "Что-то пошло не так",

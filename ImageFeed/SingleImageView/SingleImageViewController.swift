@@ -32,7 +32,7 @@ final class SingleImageViewController: UIViewController {
         setupShareButton()
         setupConstraints()
     }
- 
+    
     private func setupBackButton() {
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             image: UIImage(resource: .backward),
@@ -63,7 +63,7 @@ final class SingleImageViewController: UIViewController {
         imageView.frame.size = image.size
         scrollView.contentSize = image.size
     }
- 
+    
     private func setupShareButton() {
         shareButton.translatesAutoresizingMaskIntoConstraints = false
         shareButton.setImage(UIImage(resource: .sharing), for: .normal)
@@ -81,7 +81,7 @@ final class SingleImageViewController: UIViewController {
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-
+            
             shareButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             shareButton.heightAnchor.constraint(equalToConstant: 50),
             shareButton.widthAnchor.constraint(equalToConstant: 50),

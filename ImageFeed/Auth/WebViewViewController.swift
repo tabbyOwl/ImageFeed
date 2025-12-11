@@ -19,7 +19,7 @@ protocol WebViewViewControllerDelegate: AnyObject {
 final class WebViewViewController: UIViewController {
     weak var delegate: WebViewViewControllerDelegate?
     
-    //MARK: - @IBOutlets
+    //MARK: - Private properties
     private let progressView = UIProgressView()
     private var webView = WKWebView()
     private var estimatedProgressObservation: NSKeyValueObservation?
@@ -36,7 +36,7 @@ final class WebViewViewController: UIViewController {
             \.estimatedProgress,
              options: [],
              changeHandler: { [weak self] _, _ in
-                 guard let self = self else { return }
+                 guard let self else { return }
                  self.updateProgress()
              })
     }

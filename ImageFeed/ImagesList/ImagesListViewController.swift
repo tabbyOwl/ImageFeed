@@ -10,22 +10,35 @@ import UIKit
 final class ImagesListViewController: UIViewController {
     // MARK: - Private properties
     private let tableView = UITableView()
-    private let photosNames: [String] = Array(0..<20).map{ "\($0)" }
+    private var photos = [Photo]()
     private let showSingleImageSegueIdentifier = "ShowSingleImage"
+    private let imagesListService = ImagesListService.shared
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupDataSourceAndDelegate()
+        setupUI()
         
-        setupTable()
-        setupConstraints()
+        NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(updateTableView),
+                name: ImagesListService.didChangeNotification,
+                object: nil
+            )
+        
+        imagesListService.fetchPhotosNextPage { _ in }
     }
     
     // MARK: - Private methods
     private func setupDataSourceAndDelegate() {
         tableView.delegate = self
         tableView.dataSource = self
+    }
+    
+    private func setupUI() {
+        setupTable()
+        setupConstraints()
+        setupDataSourceAndDelegate()
     }
     
     private func setupTable() {
@@ -44,23 +57,40 @@ final class ImagesListViewController: UIViewController {
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
+    
+    @objc private func updateTableView() {
+        let oldCount = photos.count
+        let newCount = imagesListService.photos.count
+        
+        self.photos = imagesListService.photos
+        
+        if oldCount != newCount {
+            let indexPaths = (oldCount..<newCount).map {
+                IndexPath(row: $0, section: 0)
+            }
+            tableView.insertRows(at: indexPaths, with: .automatic)
+        }
+    }
 }
 
 // MARK: - UITableViewDataSource
 extension ImagesListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        photosNames.count
+        photos.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
         guard let cell = tableView.dequeueReusableCell(withIdentifier: ImagesListCell.reuseIdentifier, for: indexPath) as? ImagesListCell else {return UITableViewCell()}
-        let photoName = self.photosNames[indexPath.row]
+        let photo = self.photos[indexPath.row]
         cell.delegate = self
-        cell.configure(with: photoName)
-        
+        cell.configure(with: photo)
         return cell
-        
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if indexPath.row + 1 == photos.count {
+            imagesListService.fetchPhotosNextPage { _ in }
+        }
     }
 }
 
@@ -68,22 +98,20 @@ extension ImagesListViewController: UITableViewDataSource {
 extension ImagesListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let singleImageVC = SingleImageViewController()
-        let photosName = photosNames[indexPath.row]
-        let image = UIImage(named: photosName)
-        singleImageVC.image = image
-        navigationController?.pushViewController(singleImageVC, animated: true)
+        let photo = photos[indexPath.row]
+        
+//        singleImageVC.image = image
+//        navigationController?.pushViewController(singleImageVC, animated: true)
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        guard let image = UIImage(named: photosNames[indexPath.row]) else {
-            return 0
-        }
+        let photo = photos[indexPath.row]
         
         let imageInsets = UIEdgeInsets(top: 4, left: 16, bottom: 4, right: 16)
         let imageViewWidth = tableView.bounds.width - imageInsets.left - imageInsets.right
-        let imageWidth = image.size.width
+        let imageWidth = photo.size.width
         let scale = imageViewWidth / imageWidth
-        let cellHeight = image.size.height * scale + imageInsets.top + imageInsets.bottom
+        let cellHeight = photo.size.height * scale + imageInsets.top + imageInsets.bottom
         return cellHeight
     }
 }

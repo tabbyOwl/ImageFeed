@@ -5,6 +5,7 @@
 //  Created by Svetlana on 2025/11/28.
 //
 import UIKit
+import Kingfisher
 
 protocol ImagesListCellDelegate: AnyObject {
     func imagesListCellDidTapButton(_ cell: ImagesListCell)
@@ -40,8 +41,11 @@ final class ImagesListCell: UITableViewCell {
     }
     
     //MARK: - Public methods
-    func configure(with image: String) {
-        imageCellView.image = UIImage(named: image)
+    func configure(with photo: Photo) {
+        
+        updatePhoto(photo: photo)
+        dateLabel.text = dateFormatter.string(from: photo.createdAt ?? Date())
+        setLike(isLiked: photo.isLiked)
     }
     
     func setLike(isLiked: Bool) {
@@ -100,6 +104,25 @@ final class ImagesListCell: UITableViewCell {
             dateLabel.leadingAnchor.constraint(equalTo: imageCellView.leadingAnchor, constant: 8),
             dateLabel.trailingAnchor.constraint(equalTo: imageCellView.trailingAnchor)
         ])
+    }
+    
+    private func updatePhoto(photo: Photo) {
+        guard let url = URL(string: photo.thumbImageURL) else {
+            imageCellView.image = UIImage(systemName: "xmark.circle")
+            return
+        }
+        
+        let processor = DownsamplingImageProcessor(size: imageCellView.bounds.size)
+        imageCellView.kf.indicatorType = .activity
+        imageCellView.kf.setImage(
+            with: url,
+            placeholder: UIImage(systemName: "photo"),
+            options: [
+                .processor(processor),
+                .scaleFactor(UIScreen.main.scale),
+                .cacheOriginalImage
+            ]
+        )
     }
     
     @objc private func likeButtonTapped() {

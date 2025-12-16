@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 final class SingleImageViewController: UIViewController {
     
@@ -16,13 +17,13 @@ final class SingleImageViewController: UIViewController {
     private let shareButton = UIButton()
     
     // MARK: - Public properties
-    var image: UIImage?
+    var url: URL?
     
     // MARK: - Life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        rescaleAndCenterImage()
+        loadImage()
     }
     // MARK: - Private methods
     private func setupUI() {
@@ -58,10 +59,6 @@ final class SingleImageViewController: UIViewController {
         imageView.translatesAutoresizingMaskIntoConstraints = true
         imageView.contentMode = .scaleAspectFit
         scrollView.addSubview(imageView)
-        guard let image else { return }
-        imageView.image = image
-        imageView.frame.size = image.size
-        scrollView.contentSize = image.size
     }
     
     private func setupShareButton() {
@@ -89,12 +86,11 @@ final class SingleImageViewController: UIViewController {
         ])
     }
     
-    private func rescaleAndCenterImage() {
+    private func rescaleAndCenterImage(image: UIImage) {
         let minZoomScale = scrollView.minimumZoomScale
         let maxZoomScale = scrollView.maximumZoomScale
         view.layoutIfNeeded()
         let visibleRectSize = scrollView.bounds.size
-        guard let image else { return }
         let imageSize = image.size
         let hScale = visibleRectSize.width / imageSize.width
         let vScale = visibleRectSize.height / imageSize.height
@@ -117,11 +113,30 @@ final class SingleImageViewController: UIViewController {
             right: horizontalInset
         )
     }
+    private func loadImage() {
+        UIBlockingProgressHUD.show()
+        
+        imageView.kf.setImage(with: url) { [weak self] result in
+            UIBlockingProgressHUD.dismiss()
+            
+            guard let self = self else { return }
+            switch result {
+            case .success(let imageResult):
+                imageView.frame.size = imageResult.image.size
+                scrollView.contentSize = imageResult.image.size
+                rescaleAndCenterImage(image: imageResult.image)
+            case .failure:
+                print("ERROR")
+                //self.showError()
+            }
+        }
+    }
     
     @objc private func didTapShareButton(_ sender: UIButton) {
-        guard let image else { return }
-        let activityViewController = UIActivityViewController(activityItems: [image], applicationActivities: nil)
-        present(activityViewController, animated: true, completion: nil)
+        if let image = self.imageView.image {
+            let activityViewController = UIActivityViewController(activityItems: [image], applicationActivities: nil)
+            present(activityViewController, animated: true, completion: nil)
+        }
     }
     
     @objc private func didTapBackButton(_ sender: Any) {

@@ -40,9 +40,14 @@ final class ImagesListCell: UITableViewCell {
         nil
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        
+        imageCellView.kf.cancelDownloadTask()
+    }
+    
     //MARK: - Public methods
     func configure(with photo: Photo) {
-        
         updatePhoto(photo: photo)
         dateLabel.text = dateFormatter.string(from: photo.createdAt ?? Date())
         setLike(isLiked: photo.isLiked)
@@ -68,7 +73,7 @@ final class ImagesListCell: UITableViewCell {
         imageCellView.layer.cornerRadius = 16
         imageCellView.clipsToBounds = true
         imageCellView.layer.masksToBounds = true
-        self.addSubview(imageCellView)
+        contentView.addSubview(imageCellView)
     }
     
     private func setupLikeButton() {
@@ -76,7 +81,7 @@ final class ImagesListCell: UITableViewCell {
         likeButton.setImage(UIImage(resource: .active), for: .normal)
         likeButton.addTarget(self, action: #selector(likeButtonTapped), for: .touchUpInside)
         likeButton.setTitle("", for: .normal)
-        self.addSubview(likeButton)
+        contentView.addSubview(likeButton)
     }
     
     private func setupDateLabel() {
@@ -85,21 +90,21 @@ final class ImagesListCell: UITableViewCell {
         dateLabel.font = Fonts.sfProTextRegular13
         let date = dateFormatter.string(from: Date())
         dateLabel.text = date
-        self.addSubview(dateLabel)
+        contentView.addSubview(dateLabel)
     }
     
     private func setupConstraints() {
         NSLayoutConstraint.activate([
-            imageCellView.topAnchor.constraint(equalTo: self.topAnchor, constant: 4),
-            imageCellView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
-            imageCellView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
-            imageCellView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -4),
+            imageCellView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 4),
+            imageCellView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            imageCellView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            imageCellView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -4),
             
             likeButton.topAnchor.constraint(equalTo: imageCellView.topAnchor),
             likeButton.trailingAnchor.constraint(equalTo: imageCellView.trailingAnchor),
-            
             likeButton.heightAnchor.constraint(equalToConstant: 44),
             likeButton.widthAnchor.constraint(equalToConstant: 44),
+            
             dateLabel.bottomAnchor.constraint(equalTo: imageCellView.bottomAnchor, constant: -8),
             dateLabel.leadingAnchor.constraint(equalTo: imageCellView.leadingAnchor, constant: 8),
             dateLabel.trailingAnchor.constraint(equalTo: imageCellView.trailingAnchor)
@@ -107,16 +112,13 @@ final class ImagesListCell: UITableViewCell {
     }
     
     private func updatePhoto(photo: Photo) {
-        guard let url = URL(string: photo.thumbImageURL) else {
-            imageCellView.image = UIImage(systemName: "xmark.circle")
-            return
-        }
+        let url = photo.thumbImageURL
         
         let processor = DownsamplingImageProcessor(size: imageCellView.bounds.size)
         imageCellView.kf.indicatorType = .activity
         imageCellView.kf.setImage(
             with: url,
-            placeholder: UIImage(systemName: "photo"),
+            placeholder: UIImage(resource: .placeholder),
             options: [
                 .processor(processor),
                 .scaleFactor(UIScreen.main.scale),

@@ -11,60 +11,69 @@ import SwiftKeychainWrapper
 
 final class ImagesListService {
     
-    static let shared = ImagesListService()
-    
     private(set) var photos: [Photo] = []
     private var lastLoadedPage: Int?
     private var task: URLSessionTask?
     private var decoder = SnakeCaseJSONDecoder()
     static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
     
-    private init(task: URLSessionTask? = nil) {
-        self.task = task
-    }
-    
-    func fetchPhotosNextPage(_ completion: @escaping (Result<String, Error>) -> Void) {
-        if task != nil {
-               return
-           }
+    func fetchPhotosNextPage() {
+        if self.task != nil {
+            return
+        }
         
         guard let token = KeychainWrapper.standard.string(forKey: Constants.oAuthTokenKey) else {
             print("Failed to get token from storage")
-            completion(.failure(NetworkError.invalidToken))
             return }
         
-        let nextPage = (lastLoadedPage ?? 0) + 1
+        let nextPage = (self.lastLoadedPage ?? 0) + 1
         
-        guard let request = makePhotosRequest(token: token, page: nextPage) else {
-            completion(.failure(URLError(.badURL)))
+        guard let request = self.makePhotosRequest(token: token, page: nextPage) else {
             return
         }
         
         let task = URLSession.shared.objectTask(for: request) {[weak self] (result: Result<[PhotoResult], Error>) in
-            
             guard let self else { return }
-            switch result {
-            case .success(let photoResult):
-                let newPhotos: [Photo] = photoResult.map { self.convert(photoResult: $0)}
-                
-                self.photos.append(contentsOf: newPhotos)
-                self.lastLoadedPage = nextPage
-                
-                // Отправляем уведомление контроллеру
-                               NotificationCenter.default.post(
-                                   name: ImagesListService.didChangeNotification,
-                                   object: self
-                               )
-
-            case .failure(let error):
-                print("[ProfileImageService]: error \(error)")
-                completion(.failure(error))
+            
+            
+                switch result {
+                case .success(let photoResult):
+                    let newPhotos: [Photo] = photoResult.map { self.convert(photoResult: $0)}
+                    DispatchQueue.main.async {
+                        self.photos.append(contentsOf: newPhotos)
+                        self.lastLoadedPage = nextPage
+                        
+                        NotificationCenter.default.post(
+                            name: ImagesListService.didChangeNotification,
+                            object: self
+                        )
+                    }
+                case .failure(let error):
+                    print("[ProfileImageService]: error \(error)")
+                }
+                self.task = nil
             }
-            self.task = nil
-        }
         
         self.task = task
         task.resume()
+    }
+    
+    func changeLike(photoId: String, isLike: Bool, _ completion: @escaping (Result<Void, Error>) -> Void) {
+        if let index = self.photos.firstIndex(where: { $0.id == photoId }) {
+            let photo = self.photos[index]
+            
+            let newPhoto = Photo(
+                id: photo.id,
+                size: photo.size,
+                createdAt: photo.createdAt,
+                welcomeDescription: photo.welcomeDescription,
+                thumbImageURL: photo.thumbImageURL,
+                fullImageURL: photo.fullImageURL,
+                isLiked: !photo.isLiked
+            )
+            self.photos[index] = newPhoto
+            completion(.success(()))
+        }
     }
     
     private func convert(photoResult: PhotoResult) -> Photo {
@@ -72,10 +81,14 @@ final class ImagesListService {
         let size = CGSize(width: photoResult.width, height: photoResult.height)
         let date = dateFromISO8601(photoResult.createdAt)
         let description = photoResult.description
-        let thumbImageURL = photoResult.urls.thumb
-        let largeImageURL = photoResult.urls.full
-        let isLiked = photoResult.likes == 0 ? false : true
-        let photo = Photo(id: id, size: size, createdAt: date, welcomeDescription: description, thumbImageURL: thumbImageURL, largeImageURL: largeImageURL, isLiked: isLiked)
+        
+        
+        let thumbImageURL = URL(string: photoResult.urls.thumb)
+        let largeImageURL = URL(string: photoResult.urls.full)
+        
+    
+        let isLiked = photoResult.likedByUser
+        let photo = Photo(id: id, size: size, createdAt: date, welcomeDescription: description, thumbImageURL: thumbImageURL, fullImageURL: largeImageURL, isLiked: isLiked)
         return photo
     }
     

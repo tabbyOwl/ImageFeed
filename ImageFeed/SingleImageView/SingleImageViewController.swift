@@ -126,10 +126,26 @@ final class SingleImageViewController: UIViewController {
                 scrollView.contentSize = imageResult.image.size
                 rescaleAndCenterImage(image: imageResult.image)
             case .failure:
-                print("ERROR")
-                //self.showError()
+                showError()
             }
         }
+    }
+    
+    private func showError() {
+        let alert = UIAlertController(
+            title: "Что-то пошло не так",
+            message: "Попробовать еще раз?",
+            preferredStyle: .alert)
+        
+        let noAction = UIAlertAction(title: "Не надо", style: .cancel)
+        
+        let repeatAction = UIAlertAction(title: "Повторить", style: .default) { [weak self] _ in
+            self?.loadImage()
+        }
+        alert.addAction(noAction)
+        alert.addAction(repeatAction)
+        
+        self.present(alert, animated: true)
     }
     
     @objc private func didTapShareButton(_ sender: UIButton) {

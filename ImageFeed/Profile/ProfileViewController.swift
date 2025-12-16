@@ -154,6 +154,8 @@ final class ProfileViewController: UIViewController {
     }
     
     @objc private func didTapLogoutButton() {
-        print("Logout button tapped")
+        ProfileLogoutService.shared.logout()
+        let splachVC = SplashViewController()
+        present(splachVC, animated: true)
     }
 }

@@ -11,11 +11,20 @@ import SwiftKeychainWrapper
 
 final class ImagesListService {
     
+    static let shared = ImagesListService()
+    private init() {}
     private(set) var photos: [Photo] = []
     private var lastLoadedPage: Int?
     private var task: URLSessionTask?
     private var decoder = SnakeCaseJSONDecoder()
     static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
+    
+    func clearPhotos() {
+        DispatchQueue.main.async {
+            self.photos = []
+            NotificationCenter.default.post(name: ImagesListService.didChangeNotification, object: nil)
+        }
+    }
     
     func fetchPhotosNextPage() {
         if self.task != nil {

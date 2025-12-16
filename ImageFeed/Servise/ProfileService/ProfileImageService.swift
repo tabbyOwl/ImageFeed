@@ -15,6 +15,10 @@ final class ProfileImageService {
         self.task = task
     }
     
+    func clearAvatar() {
+            avatarURL = nil
+        }
+    
     private(set) var avatarURL: String?
     private var task: URLSessionTask?
     private var decoder = SnakeCaseJSONDecoder()

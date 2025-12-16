@@ -13,6 +13,10 @@ final class ProfileService {
         self.task = task
     }
     
+    func clearProfile() {
+            profile = nil
+        }
+    
     private(set) var profile: Profile?
     private var task: URLSessionTask?
     private var decoder = SnakeCaseJSONDecoder()

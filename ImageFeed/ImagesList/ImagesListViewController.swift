@@ -13,7 +13,7 @@ final class ImagesListViewController: UIViewController {
     private let tableView = UITableView()
     private var photos = [Photo]()
     private let showSingleImageSegueIdentifier = "ShowSingleImage"
-    private let imagesListService = ImagesListService()
+    private let imagesListService = ImagesListService.shared
     private var imagesListServiceObserver: NSObjectProtocol?
     
     // MARK: - Lifecycle
@@ -67,7 +67,15 @@ final class ImagesListViewController: UIViewController {
         let oldCount = photos.count
         let newCount = imagesListService.photos.count
         photos = imagesListService.photos
-        if oldCount != newCount {
+        
+        if oldCount == 0 {
+                // первая загрузка
+                photos = imagesListService.photos
+                tableView.reloadData()
+                return
+            }
+        
+        if oldCount < newCount {
             tableView.performBatchUpdates {
                 let indexPaths = (oldCount..<newCount).map { i in
                     IndexPath(row: i, section: 0)
@@ -135,11 +143,21 @@ extension ImagesListViewController: ImagesListCellDelegate {
                 photos = imagesListService.photos
                 tableView.reloadRows(at: [indexPath], with: .automatic)
                 UIBlockingProgressHUD.dismiss()
-            case .failure(let error):
+            case .failure:
                 UIBlockingProgressHUD.dismiss()
-                print(error)
-                // TODO: Показать ошибку с использованием UIAlertController
+                showError()
             }
         }
+    }
+    
+    private func showError() {
+        let alert = UIAlertController(
+            title: "Что-то пошло не так",
+            message: "Попробуйте еще раз",
+            preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: "Скрыть", style: .cancel)
+        alert.addAction(action)
+        self.present(alert, animated: true)
     }
 }

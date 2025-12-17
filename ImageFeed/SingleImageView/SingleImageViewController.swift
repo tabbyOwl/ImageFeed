@@ -49,15 +49,13 @@ final class SingleImageViewController: UIViewController {
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.contentInsetAdjustmentBehavior = .never
-        scrollView.minimumZoomScale = 0.1
-        scrollView.maximumZoomScale = 1.25
         scrollView.bouncesZoom = true
         view.addSubview(scrollView)
     }
     
     private func setupImageView() {
-        imageView.translatesAutoresizingMaskIntoConstraints = true
         imageView.contentMode = .scaleAspectFit
+        imageView.frame = .zero
         scrollView.addSubview(imageView)
     }
     
@@ -86,26 +84,30 @@ final class SingleImageViewController: UIViewController {
         ])
     }
     
-    private func rescaleAndCenterImage(image: UIImage) {
-        let minZoomScale = scrollView.minimumZoomScale
-        let maxZoomScale = scrollView.maximumZoomScale
+    private func rescaleAndCenterImage() {
         view.layoutIfNeeded()
-        let visibleRectSize = scrollView.bounds.size
-        let imageSize = image.size
-        let hScale = visibleRectSize.width / imageSize.width
-        let vScale = visibleRectSize.height / imageSize.height
-        let scale = min(maxZoomScale, max(minZoomScale, min(hScale, vScale)))
-        scrollView.setZoomScale(scale, animated: false)
+
+        let scrollSize = scrollView.bounds.size
+        let imageSize = imageView.bounds.size
+
+        let widthScale = scrollSize.width / imageSize.width
+        let heightScale = scrollSize.height / imageSize.height
+        let minScale = min(widthScale, heightScale)
+
+        scrollView.minimumZoomScale = minScale
+        scrollView.maximumZoomScale = max(minScale * 3, 1.0)
+        scrollView.zoomScale = minScale
+
         centerImage()
     }
     
     private func centerImage() {
         let scrollSize = scrollView.bounds.size
         let imageFrame = imageView.frame
-        
+
         let horizontalInset = max(0, (scrollSize.width - imageFrame.width) / 2)
         let verticalInset = max(0, (scrollSize.height - imageFrame.height) / 2)
-        
+
         scrollView.contentInset = UIEdgeInsets(
             top: verticalInset,
             left: horizontalInset,
@@ -113,6 +115,17 @@ final class SingleImageViewController: UIViewController {
             right: horizontalInset
         )
     }
+    
+    private func configureFor(image: UIImage) {
+        imageView.image = image
+
+        // Размер imageView = размер изображения
+        imageView.frame = CGRect(origin: .zero, size: image.size)
+        scrollView.contentSize = image.size
+
+        rescaleAndCenterImage()
+    }
+    
     private func loadImage() {
         UIBlockingProgressHUD.show()
         
@@ -121,10 +134,8 @@ final class SingleImageViewController: UIViewController {
             
             guard let self = self else { return }
             switch result {
-            case .success(let imageResult):
-                imageView.frame.size = imageResult.image.size
-                scrollView.contentSize = imageResult.image.size
-                rescaleAndCenterImage(image: imageResult.image)
+            case .success(let result):
+                configureFor(image: result.image)
             case .failure:
                 showError()
             }

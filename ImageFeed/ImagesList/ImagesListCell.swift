@@ -21,9 +21,9 @@ final class ImagesListCell: UITableViewCell {
     private let likeButton = UIButton()
     private let dateLabel = UILabel()
     
-    private lazy var dateFormatter: DateFormatter = {
+    private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateStyle = .long
+        formatter.dateStyle = .medium
         formatter.timeStyle = .none
         return formatter
     }()
@@ -40,16 +40,26 @@ final class ImagesListCell: UITableViewCell {
         nil
     }
     
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        imageCellView.updateAnimatedGradientFrame()
+    }
+    
     override func prepareForReuse() {
         super.prepareForReuse()
-        
         imageCellView.kf.cancelDownloadTask()
+        imageCellView.addAnimatedGradient()
+        hideData(true)
     }
     
     //MARK: - Public methods
     func configure(with photo: Photo) {
         updatePhoto(photo: photo)
-        dateLabel.text = dateFormatter.string(from: photo.createdAt ?? Date())
+        if let date = photo.createdAt {
+            dateLabel.text = ImagesListCell.dateFormatter.string(from: date)
+        } else {
+            dateLabel.text = ""
+        }
         setLike(isLiked: photo.isLiked)
     }
     
@@ -65,6 +75,12 @@ final class ImagesListCell: UITableViewCell {
         setupLikeButton()
         setupDateLabel()
         setupConstraints()
+        hideData(true)
+    }
+    
+    private func hideData(_ hidden: Bool) {
+        likeButton.isHidden = hidden
+        dateLabel.isHidden = hidden
     }
     
     private func setupImageCellView() {
@@ -73,6 +89,8 @@ final class ImagesListCell: UITableViewCell {
         imageCellView.layer.cornerRadius = 16
         imageCellView.clipsToBounds = true
         imageCellView.layer.masksToBounds = true
+        imageCellView.image = UIImage(resource: .placeholder)
+        imageCellView.addAnimatedGradient()
         contentView.addSubview(imageCellView)
     }
     
@@ -88,8 +106,6 @@ final class ImagesListCell: UITableViewCell {
         dateLabel.translatesAutoresizingMaskIntoConstraints = false
         dateLabel.textColor = .ypWhite
         dateLabel.font = Fonts.sfProTextRegular13
-        let date = dateFormatter.string(from: Date())
-        dateLabel.text = date
         contentView.addSubview(dateLabel)
     }
     
@@ -118,13 +134,18 @@ final class ImagesListCell: UITableViewCell {
         imageCellView.kf.indicatorType = .activity
         imageCellView.kf.setImage(
             with: url,
-            placeholder: UIImage(resource: .placeholder),
             options: [
                 .processor(processor),
                 .scaleFactor(UIScreen.main.scale),
                 .cacheOriginalImage
             ]
-        )
+        ){ [weak self] result in
+            self?.imageCellView.removeAnimatedGradient()
+            
+            if case .success = result {
+                self?.hideData(false)
+            }
+        }
     }
     
     @objc private func likeButtonTapped() {

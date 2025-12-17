@@ -23,7 +23,7 @@ final class ProfileViewController: UIViewController {
         setupUI()
         
         if let profile = ProfileService.shared.profile {
-            updateProfileWith(profile: profile)
+            self.updateProfileWith(profile: profile)
         }
         
         profileImageServiceObserver = NotificationCenter.default
@@ -38,14 +38,19 @@ final class ProfileViewController: UIViewController {
         updateAvatar()
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updateGradientFrame()
+    }
+    
     
     // MARK: - Private methods
     private func setupUI() {
         setupBackground()
         setupImageView()
-        setupNameLabel()
-        setupLoginLabel()
-        setupDescriptionLabel()
+        setupLabel(label: nameLabel, font: Fonts.sfProTextBold23, color: .ypWhite)
+        setupLabel(label: loginLabel, font: Fonts.sfProTextRegular13, color: .ypGray)
+        setupLabel(label: descriptionLabel, font: Fonts.sfProTextRegular13, color: .ypWhite)
         setupLogoutButton()
         setupConstraints()
     }
@@ -56,31 +61,22 @@ final class ProfileViewController: UIViewController {
     
     private func setupImageView() {
         profileImageView.translatesAutoresizingMaskIntoConstraints = false
-        profileImageView.layer.cornerRadius = profileImageView.frame.width/2
+        profileImageView.layer.cornerRadius = 35
         profileImageView.clipsToBounds = true
         profileImageView.contentMode = .scaleAspectFill
+        profileImageView.image = UIImage(systemName: "person")
+        profileImageView.addAnimatedGradient()
         view.addSubview(profileImageView)
     }
     
-    private func setupNameLabel() {
-        nameLabel.translatesAutoresizingMaskIntoConstraints = false
-        nameLabel.textColor = .ypWhite
-        nameLabel.font = Fonts.sfProTextBold23
-        view.addSubview(nameLabel)
-    }
-    
-    private func setupLoginLabel() {
-        loginLabel.translatesAutoresizingMaskIntoConstraints = false
-        loginLabel.textColor = .ypGray
-        loginLabel.font = Fonts.sfProTextRegular13
-        view.addSubview(loginLabel)
-    }
-    
-    private func setupDescriptionLabel() {
-        descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
-        descriptionLabel.textColor = .ypWhite
-        descriptionLabel.font = Fonts.sfProTextRegular13
-        view.addSubview(descriptionLabel)
+    private func setupLabel(label: UILabel, font: UIFont?, color: UIColor) {
+        label.layer.cornerRadius = 14
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.textColor = color
+        label.font = font
+        label.clipsToBounds = true
+        label.addAnimatedGradient()
+        view.addSubview(label)
     }
     
     @objc private func setupLogoutButton() {
@@ -99,12 +95,18 @@ final class ProfileViewController: UIViewController {
             
             nameLabel.topAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: 8),
             nameLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            nameLabel.heightAnchor.constraint(equalToConstant: 28),
+            nameLabel.widthAnchor.constraint(equalToConstant: 238),
             
             loginLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 8),
             loginLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            loginLabel.heightAnchor.constraint(equalToConstant: 28),
+            loginLabel.widthAnchor.constraint(equalToConstant: 158),
             
             descriptionLabel.topAnchor.constraint(equalTo: loginLabel.bottomAnchor, constant: 8),
             descriptionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            descriptionLabel.heightAnchor.constraint(equalToConstant: 28),
+            descriptionLabel.widthAnchor.constraint(equalToConstant: 128),
             
             logoutButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 89),
             logoutButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
@@ -121,14 +123,10 @@ final class ProfileViewController: UIViewController {
         
         print("imageUrl: \(imageUrl)")
         
-        let placeholderImage = UIImage(systemName: "person.circle.fill")?
-            .withTintColor(.lightGray, renderingMode: .alwaysOriginal)
-            .withConfiguration(UIImage.SymbolConfiguration(pointSize: 70, weight: .regular, scale: .large))
         let processor = RoundCornerImageProcessor(cornerRadius: 35)
         profileImageView.kf.indicatorType = .activity
         profileImageView.kf.setImage(
             with: imageUrl,
-            placeholder: placeholderImage,
             options: [
                 .processor(processor),
                 .scaleFactor(UIScreen.main.scale),
@@ -138,6 +136,7 @@ final class ProfileViewController: UIViewController {
                 
                 switch result {
                 case .success(let value):
+                    self.profileImageView.removeAnimatedGradient()
                     print(value.image)
                     print(value.cacheType)
                     print(value.source)
@@ -147,15 +146,50 @@ final class ProfileViewController: UIViewController {
             }
     }
     
-    private func updateProfileWith(profile : Profile) {
+    private func updateProfileWith(profile: Profile) {
         nameLabel.text = profile.name
         loginLabel.text = profile.loginName
         descriptionLabel.text = profile.bio
+        
+        nameLabel.sizeToFit()
+        loginLabel.sizeToFit()
+        descriptionLabel.sizeToFit()
+        removeAnimatedGradient()
+    }
+    
+    private func updateGradientFrame() {
+        nameLabel.updateAnimatedGradientFrame()
+        loginLabel.updateAnimatedGradientFrame()
+        descriptionLabel.updateAnimatedGradientFrame()
+        profileImageView.updateAnimatedGradientFrame()
+    }
+    
+    private func removeAnimatedGradient() {
+        nameLabel.removeAnimatedGradient()
+        loginLabel.removeAnimatedGradient()
+        descriptionLabel.removeAnimatedGradient()
     }
     
     @objc private func didTapLogoutButton() {
-        ProfileLogoutService.shared.logout()
-        let splachVC = SplashViewController()
-        present(splachVC, animated: true)
+        showAlert()
+    }
+    
+    private func showAlert() {
+        let alert = UIAlertController(
+            title: "Пока, пока!",
+            message: "Уверены что хотите выйти?",
+            preferredStyle: .alert)
+        
+        let noAction = UIAlertAction(title: "Нет", style: .cancel)
+        
+        let yesAction = UIAlertAction(title: "Да", style: .default) { [weak self] _ in
+            ProfileLogoutService.shared.logout()
+            let splachVC = SplashViewController()
+            self?.present(splachVC, animated: true)
+        }
+        alert.addAction(noAction)
+        alert.addAction(yesAction)
+        
+        self.present(alert, animated: true)
     }
 }

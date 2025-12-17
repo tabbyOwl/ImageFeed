@@ -28,6 +28,7 @@ final class ImagesListViewController: UIViewController {
                 queue: .main
             ) { [weak self] _ in
                 guard let self else { return }
+                
                 self.updateTableView()
             }
         imagesListService.fetchPhotosNextPage()
@@ -69,11 +70,11 @@ final class ImagesListViewController: UIViewController {
         photos = imagesListService.photos
         
         if oldCount == 0 {
-                // первая загрузка
-                photos = imagesListService.photos
-                tableView.reloadData()
-                return
-            }
+            // первая загрузка
+            photos = imagesListService.photos
+            tableView.reloadData()
+            return
+        }
         
         if oldCount < newCount {
             tableView.performBatchUpdates {
@@ -103,7 +104,7 @@ extension ImagesListViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if indexPath.row + 1 == photos.count {
-                self.imagesListService.fetchPhotosNextPage()
+            self.imagesListService.fetchPhotosNextPage()
         }
     }
 }
@@ -115,7 +116,7 @@ extension ImagesListViewController: UITableViewDelegate {
         let photo = photos[indexPath.row]
         let url = photo.fullImageURL
         singleImageVC.url = url
-
+        
         navigationController?.pushViewController(singleImageVC, animated: true)
     }
     
@@ -156,7 +157,7 @@ extension ImagesListViewController: ImagesListCellDelegate {
             message: "Попробуйте еще раз",
             preferredStyle: .alert)
         
-        let action = UIAlertAction(title: "Скрыть", style: .cancel)
+        let action = UIAlertAction(title: "Ок", style: .cancel)
         alert.addAction(action)
         self.present(alert, animated: true)
     }

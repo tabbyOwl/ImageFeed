@@ -5,6 +5,7 @@
 //  Created by Svetlana on 2025/12/4.
 //
 import UIKit
+import Logging
 
 final class OAuth2Service {
     
@@ -14,6 +15,7 @@ final class OAuth2Service {
     private let storage = OAuth2TokenStorage.shared
     private let decoder = SnakeCaseJSONDecoder()
     
+    private let logger = Logger(label: "OAuth2Service")
     private var urlSession = URLSession.shared
     private var task: URLSessionTask?
     private var lastCode: String?
@@ -21,6 +23,7 @@ final class OAuth2Service {
     func fetchOauthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread)
         guard lastCode != code else {
+            logger.warning("Duplicate OAuth code request: \(code)")
             completion(.failure(NetworkError.invalidRequest))
             return
         }
@@ -29,7 +32,7 @@ final class OAuth2Service {
         lastCode = code
         
         guard let request = makeOAuthTokenRequest(code: code) else {
-            print("Failed to create URLRequest with code: \(code)")
+            logger.error("Failed to create URLRequest with code: \(code)")
             completion(.failure(NetworkError.invalidRequest))
             return
         }
@@ -44,7 +47,13 @@ final class OAuth2Service {
                 completion(.success(body.accessToken))
                 
             case .failure(let error):
-                print("[OAuth2Service]: error \(error)")
+                self?.logger.error("Failed to fetch OAuth token",
+                                   metadata: [
+                                    "error": "\(error)",
+                                    "code": .string(code),
+                                    "url": "\(request.url?.absoluteString ?? "unknown")"
+                                   ]
+                )
                 completion(.failure(error))
             }
         }
@@ -55,6 +64,7 @@ final class OAuth2Service {
     private func makeOAuthTokenRequest(code: String) -> URLRequest? {
         guard var urlComponents = URLComponents(string: "https://unsplash.com/oauth/token") else {
             assertionFailure("Invalid URLComponents string for OAuth token request")
+            logger.critical("Invalid URLComponents string for OAuth token request")
             return nil
         }
         
@@ -68,6 +78,7 @@ final class OAuth2Service {
         
         guard let authTokenUrl = urlComponents.url else {
             assertionFailure("Failed to create URL from URLComponents")
+            logger.critical("Failed to create URL from URLComponents", metadata: ["components": "\(urlComponents)"])
             return nil
         }
         

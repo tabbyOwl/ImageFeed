@@ -6,26 +6,45 @@
 //
 
 import UIKit
+import Kingfisher
 
 final class ImagesListViewController: UIViewController {
     // MARK: - Private properties
     private let tableView = UITableView()
-    private let photosNames: [String] = Array(0..<20).map{ "\($0)" }
+    private var photos = [Photo]()
     private let showSingleImageSegueIdentifier = "ShowSingleImage"
+    private let imagesListService = ImagesListService.shared
+    private var imagesListServiceObserver: NSObjectProtocol?
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupDataSourceAndDelegate()
+        setupUI()
         
-        setupTable()
-        setupConstraints()
+        imagesListServiceObserver = NotificationCenter.default
+            .addObserver(
+                forName: ImagesListService.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self else { return }
+                
+                self.updateTableView()
+            }
+        imagesListService.fetchPhotosNextPage()
+        
     }
     
     // MARK: - Private methods
     private func setupDataSourceAndDelegate() {
         tableView.delegate = self
         tableView.dataSource = self
+    }
+    
+    private func setupUI() {
+        setupTable()
+        setupConstraints()
+        setupDataSourceAndDelegate()
     }
     
     private func setupTable() {
@@ -44,23 +63,49 @@ final class ImagesListViewController: UIViewController {
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
+    
+    @objc private func updateTableView() {
+        let oldCount = photos.count
+        let newCount = imagesListService.photos.count
+        photos = imagesListService.photos
+        
+        if oldCount == 0 {
+            // первая загрузка
+            photos = imagesListService.photos
+            tableView.reloadData()
+            return
+        }
+        
+        if oldCount < newCount {
+            tableView.performBatchUpdates {
+                let indexPaths = (oldCount..<newCount).map { i in
+                    IndexPath(row: i, section: 0)
+                }
+                tableView.insertRows(at: indexPaths, with: .automatic)
+            } completion: { _ in }
+        }
+    }
 }
+
 
 // MARK: - UITableViewDataSource
 extension ImagesListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        photosNames.count
+        photos.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
         guard let cell = tableView.dequeueReusableCell(withIdentifier: ImagesListCell.reuseIdentifier, for: indexPath) as? ImagesListCell else {return UITableViewCell()}
-        let photoName = self.photosNames[indexPath.row]
+        let photo = self.photos[indexPath.row]
         cell.delegate = self
-        cell.configure(with: photoName)
-        
+        cell.configure(with: photo)
         return cell
-        
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if indexPath.row + 1 == photos.count {
+            self.imagesListService.fetchPhotosNextPage()
+        }
     }
 }
 
@@ -68,22 +113,21 @@ extension ImagesListViewController: UITableViewDataSource {
 extension ImagesListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let singleImageVC = SingleImageViewController()
-        let photosName = photosNames[indexPath.row]
-        let image = UIImage(named: photosName)
-        singleImageVC.image = image
+        let photo = photos[indexPath.row]
+        let url = photo.fullImageURL
+        singleImageVC.url = url
+        
         navigationController?.pushViewController(singleImageVC, animated: true)
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        guard let image = UIImage(named: photosNames[indexPath.row]) else {
-            return 0
-        }
+        let photo = photos[indexPath.row]
         
         let imageInsets = UIEdgeInsets(top: 4, left: 16, bottom: 4, right: 16)
         let imageViewWidth = tableView.bounds.width - imageInsets.left - imageInsets.right
-        let imageWidth = image.size.width
+        let imageWidth = photo.size.width
         let scale = imageViewWidth / imageWidth
-        let cellHeight = image.size.height * scale + imageInsets.top + imageInsets.bottom
+        let cellHeight = photo.size.height * scale + imageInsets.top + imageInsets.bottom
         return cellHeight
     }
 }
@@ -91,8 +135,45 @@ extension ImagesListViewController: UITableViewDelegate {
 extension ImagesListViewController: ImagesListCellDelegate {
     func imagesListCellDidTapButton(_ cell: ImagesListCell) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
-        let isLiked = indexPath.row % 2 == 0
-        cell.setLike(isLiked: isLiked)
-        tableView.reloadRows(at: [indexPath], with: .automatic)
+        let photo = photos[indexPath.row]
+        var hudShown = false
+        
+        let workItem = DispatchWorkItem {
+            hudShown = true
+            UIBlockingProgressHUD.show()
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: workItem)
+        
+        imagesListService.changeLike(photoId: photo.id, isLike: photo.isLiked) { [weak self] result in
+            DispatchQueue.main.async {
+                workItem.cancel()
+                
+                if hudShown {
+                    UIBlockingProgressHUD.dismiss()
+                }
+                
+                guard let self else { return }
+                switch result {
+                case .success:
+                    self.photos = self.imagesListService.photos
+                    self.tableView.reloadRows(at: [indexPath], with: .none)
+                case .failure:
+                    self.showError()
+                }
+            }
+        }
+    }
+    
+    
+    private func showError() {
+        let alert = UIAlertController(
+            title: "Что-то пошло не так",
+            message: "Попробуйте еще раз",
+            preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: "Ок", style: .cancel)
+        alert.addAction(action)
+        self.present(alert, animated: true)
     }
 }

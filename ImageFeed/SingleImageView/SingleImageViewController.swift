@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 final class SingleImageViewController: UIViewController {
     
@@ -16,13 +17,13 @@ final class SingleImageViewController: UIViewController {
     private let shareButton = UIButton()
     
     // MARK: - Public properties
-    var image: UIImage?
+    var url: URL?
     
     // MARK: - Life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        rescaleAndCenterImage()
+        loadImage()
     }
     // MARK: - Private methods
     private func setupUI() {
@@ -48,20 +49,14 @@ final class SingleImageViewController: UIViewController {
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.contentInsetAdjustmentBehavior = .never
-        scrollView.minimumZoomScale = 0.1
-        scrollView.maximumZoomScale = 1.25
         scrollView.bouncesZoom = true
         view.addSubview(scrollView)
     }
     
     private func setupImageView() {
-        imageView.translatesAutoresizingMaskIntoConstraints = true
         imageView.contentMode = .scaleAspectFit
+        imageView.frame = .zero
         scrollView.addSubview(imageView)
-        guard let image else { return }
-        imageView.image = image
-        imageView.frame.size = image.size
-        scrollView.contentSize = image.size
     }
     
     private func setupShareButton() {
@@ -90,16 +85,19 @@ final class SingleImageViewController: UIViewController {
     }
     
     private func rescaleAndCenterImage() {
-        let minZoomScale = scrollView.minimumZoomScale
-        let maxZoomScale = scrollView.maximumZoomScale
         view.layoutIfNeeded()
-        let visibleRectSize = scrollView.bounds.size
-        guard let image else { return }
-        let imageSize = image.size
-        let hScale = visibleRectSize.width / imageSize.width
-        let vScale = visibleRectSize.height / imageSize.height
-        let scale = min(maxZoomScale, max(minZoomScale, min(hScale, vScale)))
-        scrollView.setZoomScale(scale, animated: false)
+        
+        let scrollSize = scrollView.bounds.size
+        let imageSize = imageView.bounds.size
+        
+        let widthScale = scrollSize.width / imageSize.width
+        let heightScale = scrollSize.height / imageSize.height
+        let minScale = min(widthScale, heightScale)
+        
+        scrollView.minimumZoomScale = minScale
+        scrollView.maximumZoomScale = max(minScale * 3, 1.0)
+        scrollView.zoomScale = minScale
+        
         centerImage()
     }
     
@@ -118,10 +116,53 @@ final class SingleImageViewController: UIViewController {
         )
     }
     
+    private func configureFor(image: UIImage) {
+        imageView.image = image
+        
+        imageView.frame = CGRect(origin: .zero, size: image.size)
+        scrollView.contentSize = image.size
+        
+        rescaleAndCenterImage()
+    }
+    
+    private func loadImage() {
+        UIBlockingProgressHUD.show()
+        
+        imageView.kf.setImage(with: url) { [weak self] result in
+            UIBlockingProgressHUD.dismiss()
+            
+            guard let self else { return }
+            switch result {
+            case .success(let result):
+                configureFor(image: result.image)
+            case .failure:
+                showError()
+            }
+        }
+    }
+    
+    private func showError() {
+        let alert = UIAlertController(
+            title: "Что-то пошло не так",
+            message: "Попробовать еще раз?",
+            preferredStyle: .alert)
+        
+        let noAction = UIAlertAction(title: "Не надо", style: .cancel)
+        
+        let repeatAction = UIAlertAction(title: "Повторить", style: .default) { [weak self] _ in
+            self?.loadImage()
+        }
+        alert.addAction(noAction)
+        alert.addAction(repeatAction)
+        
+        self.present(alert, animated: true)
+    }
+    
     @objc private func didTapShareButton(_ sender: UIButton) {
-        guard let image else { return }
-        let activityViewController = UIActivityViewController(activityItems: [image], applicationActivities: nil)
-        present(activityViewController, animated: true, completion: nil)
+        if let image = self.imageView.image {
+            let activityViewController = UIActivityViewController(activityItems: [image], applicationActivities: nil)
+            present(activityViewController, animated: true, completion: nil)
+        }
     }
     
     @objc private func didTapBackButton(_ sender: Any) {

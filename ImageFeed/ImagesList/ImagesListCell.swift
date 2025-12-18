@@ -5,6 +5,7 @@
 //  Created by Svetlana on 2025/11/28.
 //
 import UIKit
+import Kingfisher
 
 protocol ImagesListCellDelegate: AnyObject {
     func imagesListCellDidTapButton(_ cell: ImagesListCell)
@@ -20,7 +21,7 @@ final class ImagesListCell: UITableViewCell {
     private let likeButton = UIButton()
     private let dateLabel = UILabel()
     
-    private lazy var dateFormatter: DateFormatter = {
+    private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .long
         formatter.timeStyle = .none
@@ -39,9 +40,27 @@ final class ImagesListCell: UITableViewCell {
         nil
     }
     
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        imageCellView.updateAnimatedGradientFrame()
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        imageCellView.kf.cancelDownloadTask()
+        imageCellView.addAnimatedGradient()
+        hideData(true)
+    }
+    
     //MARK: - Public methods
-    func configure(with image: String) {
-        imageCellView.image = UIImage(named: image)
+    func configure(with photo: Photo) {
+        updatePhoto(photo: photo)
+        if let date = photo.createdAt {
+            dateLabel.text = ImagesListCell.dateFormatter.string(from: date)
+        } else {
+            dateLabel.text = ""
+        }
+        setLike(isLiked: photo.isLiked)
     }
     
     func setLike(isLiked: Bool) {
@@ -56,6 +75,12 @@ final class ImagesListCell: UITableViewCell {
         setupLikeButton()
         setupDateLabel()
         setupConstraints()
+        hideData(true)
+    }
+    
+    private func hideData(_ hidden: Bool) {
+        likeButton.isHidden = hidden
+        dateLabel.isHidden = hidden
     }
     
     private func setupImageCellView() {
@@ -64,7 +89,9 @@ final class ImagesListCell: UITableViewCell {
         imageCellView.layer.cornerRadius = 16
         imageCellView.clipsToBounds = true
         imageCellView.layer.masksToBounds = true
-        self.addSubview(imageCellView)
+        imageCellView.image = UIImage(resource: .placeholder)
+        imageCellView.addAnimatedGradient()
+        contentView.addSubview(imageCellView)
     }
     
     private func setupLikeButton() {
@@ -72,34 +99,53 @@ final class ImagesListCell: UITableViewCell {
         likeButton.setImage(UIImage(resource: .active), for: .normal)
         likeButton.addTarget(self, action: #selector(likeButtonTapped), for: .touchUpInside)
         likeButton.setTitle("", for: .normal)
-        self.addSubview(likeButton)
+        contentView.addSubview(likeButton)
     }
     
     private func setupDateLabel() {
         dateLabel.translatesAutoresizingMaskIntoConstraints = false
         dateLabel.textColor = .ypWhite
         dateLabel.font = Fonts.sfProTextRegular13
-        let date = dateFormatter.string(from: Date())
-        dateLabel.text = date
-        self.addSubview(dateLabel)
+        contentView.addSubview(dateLabel)
     }
     
     private func setupConstraints() {
         NSLayoutConstraint.activate([
-            imageCellView.topAnchor.constraint(equalTo: self.topAnchor, constant: 4),
-            imageCellView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
-            imageCellView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
-            imageCellView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -4),
+            imageCellView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 4),
+            imageCellView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            imageCellView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            imageCellView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -4),
             
             likeButton.topAnchor.constraint(equalTo: imageCellView.topAnchor),
             likeButton.trailingAnchor.constraint(equalTo: imageCellView.trailingAnchor),
-            
             likeButton.heightAnchor.constraint(equalToConstant: 44),
             likeButton.widthAnchor.constraint(equalToConstant: 44),
+            
             dateLabel.bottomAnchor.constraint(equalTo: imageCellView.bottomAnchor, constant: -8),
             dateLabel.leadingAnchor.constraint(equalTo: imageCellView.leadingAnchor, constant: 8),
             dateLabel.trailingAnchor.constraint(equalTo: imageCellView.trailingAnchor)
         ])
+    }
+    
+    private func updatePhoto(photo: Photo) {
+        let url = photo.thumbImageURL
+        
+        let processor = DownsamplingImageProcessor(size: imageCellView.bounds.size)
+        imageCellView.kf.indicatorType = .activity
+        imageCellView.kf.setImage(
+            with: url,
+            options: [
+                .processor(processor),
+                .scaleFactor(UIScreen.main.scale),
+                .cacheOriginalImage
+            ]
+        ){ [weak self] result in
+            self?.imageCellView.removeAnimatedGradient()
+            
+            if case .success = result {
+                self?.hideData(false)
+            }
+        }
     }
     
     @objc private func likeButtonTapped() {

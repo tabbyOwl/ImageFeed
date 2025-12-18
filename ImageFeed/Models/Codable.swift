@@ -21,3 +21,17 @@ struct ProfileImage: Codable {
     let large: String
 }
 
+struct PhotoResult: Codable {
+    let id: String
+    let width: Int
+    let height: Int
+    let createdAt: String
+    let description: String?
+    let urls: PhotoURL
+    let likedByUser: Bool
+}
+
+struct PhotoURL: Codable {
+    let thumb: String
+    let full: String
+}

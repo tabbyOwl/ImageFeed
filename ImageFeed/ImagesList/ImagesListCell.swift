@@ -23,7 +23,7 @@ final class ImagesListCell: UITableViewCell {
     
     private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateStyle = .medium
+        formatter.dateStyle = .long
         formatter.timeStyle = .none
         return formatter
     }()

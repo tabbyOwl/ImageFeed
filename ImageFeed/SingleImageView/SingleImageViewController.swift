@@ -131,7 +131,7 @@ final class SingleImageViewController: UIViewController {
         imageView.kf.setImage(with: url) { [weak self] result in
             UIBlockingProgressHUD.dismiss()
             
-            guard let self = self else { return }
+            guard let self else { return }
             switch result {
             case .success(let result):
                 configureFor(image: result.image)

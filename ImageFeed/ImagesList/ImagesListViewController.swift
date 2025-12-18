@@ -136,20 +136,35 @@ extension ImagesListViewController: ImagesListCellDelegate {
     func imagesListCellDidTapButton(_ cell: ImagesListCell) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         let photo = photos[indexPath.row]
-        UIBlockingProgressHUD.show()
+        var hudShown = false
+        
+        let workItem = DispatchWorkItem {
+            hudShown = true
+            UIBlockingProgressHUD.show()
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: workItem)
+        
         imagesListService.changeLike(photoId: photo.id, isLike: photo.isLiked) { [weak self] result in
-            guard let self else { return }
-            switch result {
-            case .success():
-                photos = imagesListService.photos
-                tableView.reloadRows(at: [indexPath], with: .automatic)
-                UIBlockingProgressHUD.dismiss()
-            case .failure:
-                UIBlockingProgressHUD.dismiss()
-                showError()
+            DispatchQueue.main.async {
+                workItem.cancel()
+                
+                if hudShown {
+                    UIBlockingProgressHUD.dismiss()
+                }
+                
+                guard let self else { return }
+                switch result {
+                case .success:
+                    self.photos = self.imagesListService.photos
+                    self.tableView.reloadRows(at: [indexPath], with: .none)
+                case .failure:
+                    self.showError()
+                }
             }
         }
     }
+    
     
     private func showError() {
         let alert = UIAlertController(

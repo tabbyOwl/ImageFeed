@@ -6,6 +6,7 @@
 //
 import UIKit
 import Kingfisher
+import Logging
 
 final class ProfileViewController: UIViewController {
     
@@ -16,6 +17,7 @@ final class ProfileViewController: UIViewController {
     private lazy var descriptionLabel = UILabel()
     private let logoutButton = UIButton()
     private var profileImageServiceObserver: NSObjectProtocol?
+    private let logger = Logger(label: "ProfileViewController")
     
     // MARK: - Life cycle
     override func viewDidLoad() {
@@ -137,11 +139,21 @@ final class ProfileViewController: UIViewController {
                 switch result {
                 case .success(let value):
                     self.profileImageView.removeAnimatedGradient()
-                    print(value.image)
-                    print(value.cacheType)
-                    print(value.source)
+                    self.logger.info(
+                        "Avatar loaded successfully",
+                        metadata: [
+                            "cacheType": .string("\(value.cacheType)"),
+                            "source": .string("\(value.source)")
+                        ]
+                    )
                 case .failure(let error):
-                    print(error)
+                    self.logger.error(
+                        "Failed to load avatar",
+                        metadata: [
+                            "errorMessage": .string("\(error.localizedDescription)"),
+                            "url": .string(profileImageURL)
+                        ]
+                    )
                 }
             }
     }

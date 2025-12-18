@@ -5,6 +5,7 @@
 //  Created by Svetlana on 2025/12/4.
 //
 import UIKit
+import Logging
 
 final class SplashViewController: UIViewController {
     
@@ -15,7 +16,7 @@ final class SplashViewController: UIViewController {
     weak var delegate: AuthViewControllerDelegate?
     private let profileService = ProfileService.shared
     private let profileImageService = ProfileImageService.shared
-    
+    private let logger = Logger(label: "SplashViewController")
     //MARK: - Life cycle
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -70,9 +71,8 @@ final class SplashViewController: UIViewController {
             case .success(let profile):
                 self.profileImageService.fetchProfileImageURL(username: profile.username) {_ in }
                 self.switchToTabBarController()
-            case .failure:
-                print("Failed to load profile info")
-                break
+            case .failure(let error):
+                self.logger.error("Failed to load profile info",metadata: [ "error": .string("\(error)")])
             }
         }
     }

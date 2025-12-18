@@ -8,16 +8,24 @@
 import Foundation
 import CoreGraphics
 import SwiftKeychainWrapper
+import Logging
 
 final class ImagesListService {
     
     static let shared = ImagesListService()
-    private init() {}
+    static let didChangeNotification = Notification.Name("ImagesListServiceDidChange")
+    
+    private static let dateFormatter: ISO8601DateFormatter = {
+        ISO8601DateFormatter()
+    }()
+    
     private(set) var photos: [Photo] = []
     private var lastLoadedPage: Int?
     private var task: URLSessionTask?
     private var decoder = SnakeCaseJSONDecoder()
-    static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
+    private let logger = Logger(label: "ImagesListService")
+    
+    private init() {}
     
     func clearPhotos() {
         DispatchQueue.main.async {
@@ -27,49 +35,46 @@ final class ImagesListService {
     }
     
     func fetchPhotosNextPage() {
-        if self.task != nil {
+        guard task == nil else {
             return
         }
         
         guard let token = KeychainWrapper.standard.string(forKey: Constants.oAuthTokenKey) else {
-            print("Failed to get token from storage")
+            logger.error("Failed to get token from storage", metadata: ["key": "\(Constants.oAuthTokenKey)"])
             return }
         
-        let nextPage = (self.lastLoadedPage ?? 0) + 1
+        let nextPage = (lastLoadedPage ?? 0) + 1
         
-        guard let request = self.makePhotosRequest(token: token, page: nextPage) else {
+        guard let request = makePhotosRequest(token: token, page: nextPage) else {
             return
         }
         
         let task = URLSession.shared.objectTask(for: request) {[weak self] (result: Result<[PhotoResult], Error>) in
             guard let self else { return }
             
-            
-                switch result {
-                case .success(let photoResult):
-                    let newPhotos: [Photo] = photoResult.map { self.convert(photoResult: $0)}
-                    DispatchQueue.main.async {
-                        self.photos.append(contentsOf: newPhotos)
-                        self.lastLoadedPage = nextPage
-                        
-                        NotificationCenter.default.post(
-                            name: ImagesListService.didChangeNotification,
-                            object: self
-                        )
-                    }
-                case .failure(let error):
-                    print("[ProfileImageService]: error \(error)")
-                }
-                self.task = nil
+            switch result {
+            case .success(let photoResult):
+                let newPhotos: [Photo] = photoResult.map { self.convert(photoResult: $0)}
+                self.photos.append(contentsOf: newPhotos)
+                self.lastLoadedPage = nextPage
+                
+                NotificationCenter.default.post(
+                    name: ImagesListService.didChangeNotification,
+                    object: self
+                )
+            case .failure(let error):
+                self.logger.error("Failed to load photos page \(nextPage)", metadata: ["error": "\(error)", "url": "\(request.url?.absoluteString ?? "unknown")"])
             }
+            self.task = nil
+        }
         
         self.task = task
         task.resume()
     }
     
     func changeLike(photoId: String, isLike: Bool, _ completion: @escaping (Result<Void, Error>) -> Void) {
-        if let index = self.photos.firstIndex(where: { $0.id == photoId }) {
-            let photo = self.photos[index]
+        if let index = photos.firstIndex(where: { $0.id == photoId }) {
+            let photo = photos[index]
             
             let newPhoto = Photo(
                 id: photo.id,
@@ -88,23 +93,17 @@ final class ImagesListService {
     private func convert(photoResult: PhotoResult) -> Photo {
         let id = photoResult.id
         let size = CGSize(width: photoResult.width, height: photoResult.height)
-        let date = dateFromISO8601(photoResult.createdAt)
+        let date = ImagesListService.dateFormatter.date(from: photoResult.createdAt)
         let description = photoResult.description
         
         
         let thumbImageURL = URL(string: photoResult.urls.thumb)
         let largeImageURL = URL(string: photoResult.urls.full)
         
-    
+        
         let isLiked = photoResult.likedByUser
         let photo = Photo(id: id, size: size, createdAt: date, welcomeDescription: description, thumbImageURL: thumbImageURL, fullImageURL: largeImageURL, isLiked: isLiked)
         return photo
-    }
-    
-    func dateFromISO8601(_ string: String) -> Date? {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
-        return formatter.date(from: string)
     }
     
     private func makePhotosRequest(token: String, page: Int) -> URLRequest? {

@@ -5,8 +5,12 @@
 //  Created by Svetlana on 2025/12/4.
 //
 import UIKit
+import Logging
 
 extension URLSession {
+    
+    private static let logger = Logger(label: "URLSession")
+    
     func data(
         for request: URLRequest,
         completion: @escaping (Result<Data, Error>) -> Void
@@ -20,14 +24,14 @@ extension URLSession {
         let task = dataTask(with: request) { data, response, error in
             
             if let error = error {
-                print("URLSession error: \(error.localizedDescription)")
+                URLSession.logger.error("URLSession error",metadata: ["error": "\(error)"])
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.urlRequestError(error)))
                 return
             }
             
             guard let response = response,
                   let httpResponse = response as? HTTPURLResponse else {
-                print("Invalid response: not an HTTPURLResponse")
+                URLSession.logger.error("Invalid response (not HTTPURLResponse)")
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.invalidResponse))
                 return
             }
@@ -35,13 +39,13 @@ extension URLSession {
             let statusCode = httpResponse.statusCode
             
             if !(200..<300).contains(statusCode) {
-                print("HTTP Error: Status code \(statusCode)")
+                URLSession.logger.warning("HTTP error", metadata: ["statusCode": "\(httpResponse.statusCode)"])
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.httpStatusCode(statusCode)))
                 return
             }
             
             guard let data = data else {
-                print("No data returned from the request")
+                URLSession.logger.error("Empty response data")
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.urlSessionError))
                 return
             }
@@ -67,11 +71,11 @@ extension URLSession {
                     let result = try decoder.decode(T.self, from: data)
                     completion(.success(result))
                 } catch {
-                    print("Decoding error: \(error.localizedDescription)")
+                    URLSession.logger.error("Decoding failed", metadata: ["type": "\(T.self)","error": "\(error)"])
                     completion(.failure(error))
                 }
             case .failure(let error):
-                print("objectTask error: \(error)")
+                URLSession.logger.error("objectTask failed", metadata: ["error": "\(error)", "request": "\(request.url?.absoluteString ?? "unknown")"])
                 completion(.failure(error))
             }
         }

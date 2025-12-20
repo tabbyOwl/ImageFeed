@@ -88,9 +88,13 @@ final class AuthViewController: UIViewController {
     }
     
     private func showWebView() {
-        let webVC = WebViewViewController()
-        webVC.delegate = self
-        let navVC = UINavigationController(rootViewController: webVC)
+        let webViewViewController = WebViewViewController()
+        let authHelper = AuthHelper()
+        let webViewPresenter = WebViewPresenter(authHelper: authHelper)
+        webViewViewController.presenter = webViewPresenter
+        webViewPresenter.view = webViewViewController
+        webViewViewController.delegate = self
+        let navVC = UINavigationController(rootViewController: webViewViewController)
         
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()

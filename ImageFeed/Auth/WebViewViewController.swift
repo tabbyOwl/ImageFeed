@@ -31,11 +31,8 @@ final class WebViewViewController: UIViewController, WebViewViewControllerProtoc
     //MARK: - Life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         setupUI()
         setupBackButton()
-        webView.navigationDelegate = self
-        presenter?.viewDidLoad()
         
         estimatedProgressObservation = webView.observe(
             \.estimatedProgress,
@@ -44,10 +41,21 @@ final class WebViewViewController: UIViewController, WebViewViewControllerProtoc
                  guard let self else { return }
                  presenter?.didUpdateProgressValue(webView.estimatedProgress)
              })
+        
+        webView.navigationDelegate = self
+        presenter?.viewDidLoad()
     }
- 
+  
     func load(request: URLRequest) {
         webView.load(request)
+    }
+    
+    func setProgressValue(_ newValue: Float) {
+        progressView.progress = newValue
+    }
+
+    func setProgressHidden(_ isHidden: Bool) {
+        progressView.isHidden = isHidden
     }
     
     //MARK: - Private methods
@@ -95,19 +103,6 @@ final class WebViewViewController: UIViewController, WebViewViewControllerProtoc
             progressView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             progressView.heightAnchor.constraint(equalToConstant: 4)
         ])
-    }
-    
-//    private func updateProgress() {
-//        progressView.progress = Float(webView.estimatedProgress)
-//        progressView.isHidden = fabs(webView.estimatedProgress - 1.0) <= 0.0001
-//    }
-    
-    func setProgressValue(_ newValue: Float) {
-        progressView.progress = newValue
-    }
-
-    func setProgressHidden(_ isHidden: Bool) {
-        progressView.isHidden = isHidden
     }
     
 }

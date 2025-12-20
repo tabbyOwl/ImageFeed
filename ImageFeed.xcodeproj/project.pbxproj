@@ -38,6 +38,22 @@
 			);
 			target = 3F7904832ED8363A0034D098 /* ImageFeed */;
 		};
+		3FBEC5832EF68BFA0089E2C3 /* Exceptions for "ImageFeedTests" folder in "ImageFeed" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				WebViewPresenterSpy.swift,
+				WebViewViewControllerSpy.swift,
+			);
+			target = 3F7904832ED8363A0034D098 /* ImageFeed */;
+		};
+		3FBEC5842EF68BFA0089E2C3 /* Exceptions for "ImageFeedTests" folder in "ImageFeedTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				WebViewPresenterSpy.swift,
+				WebViewViewControllerSpy.swift,
+			);
+			target = 3FBA68E12EEAAF3C00F3AFE5 /* ImageFeedTests */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -51,6 +67,10 @@
 		};
 		3FBA68E32EEAAF3C00F3AFE5 /* ImageFeedTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				3FBEC5832EF68BFA0089E2C3 /* Exceptions for "ImageFeedTests" folder in "ImageFeed" target */,
+				3FBEC5842EF68BFA0089E2C3 /* Exceptions for "ImageFeedTests" folder in "ImageFeedTests" target */,
+			);
 			path = ImageFeedTests;
 			sourceTree = "<group>";
 		};

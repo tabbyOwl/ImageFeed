@@ -8,7 +8,14 @@ import UIKit
 import Kingfisher
 import Logging
 
-final class ProfileViewController: UIViewController {
+protocol ProfileViewControllerProtocol: AnyObject {
+    func showProfile(with profile: Profile)
+    func setAvatar(with url: URL)
+    func showLogoutConfirmation()
+    func showSplashScreen()
+}
+
+final class ProfileViewController: UIViewController, ProfileViewControllerProtocol {
     
     // MARK: - Private properties
     private let profileImageView = UIImageView()
@@ -16,28 +23,14 @@ final class ProfileViewController: UIViewController {
     private let loginLabel = UILabel()
     private lazy var descriptionLabel = UILabel()
     private let logoutButton = UIButton()
-    private var profileImageServiceObserver: NSObjectProtocol?
-    private let logger = Logger(label: "ProfileViewController")
     
+    private let logger = Logger(label: "ProfileViewController")
+    var presenter: ProfilePresenterProtocol?
     // MARK: - Life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        
-        if let profile = ProfileService.shared.profile {
-            self.updateProfileWith(profile: profile)
-        }
-        
-        profileImageServiceObserver = NotificationCenter.default
-            .addObserver(
-                forName: ProfileImageService.didChangeNotification,
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                guard let self else { return }
-                self.updateAvatar()
-            }
-        updateAvatar()
+        presenter?.viewDidLoad()
     }
     
     override func viewDidLayoutSubviews() {
@@ -45,6 +38,79 @@ final class ProfileViewController: UIViewController {
         updateGradientFrame()
     }
     
+    // MARK: - Public methods
+    func showProfile(with profile: Profile) {
+        nameLabel.text = profile.name
+        loginLabel.text = profile.loginName
+        descriptionLabel.text = profile.bio
+        
+        nameLabel.sizeToFit()
+        loginLabel.sizeToFit()
+        descriptionLabel.sizeToFit()
+        removeAnimatedGradient()
+    }
+    
+    func setAvatar(with url: URL) {
+        let processor = RoundCornerImageProcessor(cornerRadius: 35)
+        profileImageView.kf.indicatorType = .activity
+        profileImageView.kf.setImage(
+            with: url,
+            placeholder: UIImage(systemName: "person"),
+            options: [
+                .processor(processor),
+                .scaleFactor(UIScreen.main.scale),
+                .cacheOriginalImage,
+                .forceRefresh
+            ]) { result in
+                
+                switch result {
+                case .success(let value):
+                    self.profileImageView.removeAnimatedGradient()
+                    self.logger.info(
+                        "Avatar loaded successfully",
+                        metadata: [
+                            "cacheType": .string("\(value.cacheType)"),
+                            "source": .string("\(value.source)")
+                        ]
+                    )
+                case .failure(let error):
+                    self.logger.error(
+                        "Failed to load avatar",
+                        metadata: [
+                            "errorMessage": .string("\(error.localizedDescription)"),
+                            "url": .string(url.absoluteString)
+                        ]
+                    )
+                }
+            }
+    }
+    
+    func showSplashScreen() {
+            let splashVC = SplashViewController()
+            self.present(splashVC, animated: true)
+    }
+    
+    func showLogoutConfirmation() {
+        let alert = UIAlertController(
+            title: "Пока, пока!",
+            message: "Уверены что хотите выйти?",
+            preferredStyle: .alert
+        )
+        
+        let noAction = UIAlertAction(title: "Нет", style: .cancel)
+        
+        let yesAction = UIAlertAction(
+            title: "Да",
+            style: .default
+        ) { [weak self] _ in
+            self?.presenter?.confirmLogout()
+        }
+        
+        alert.addAction(noAction)
+        alert.addAction(yesAction)
+        
+        present(alert, animated: true)
+    }
     
     // MARK: - Private methods
     private func setupUI() {
@@ -117,58 +183,6 @@ final class ProfileViewController: UIViewController {
         ])
     }
     
-    private func updateAvatar() {
-        guard
-            let profileImageURL = ProfileImageService.shared.avatarURL,
-            let imageUrl = URL(string: profileImageURL)
-        else { return }
-        
-        print("imageUrl: \(imageUrl)")
-        
-        let processor = RoundCornerImageProcessor(cornerRadius: 35)
-        profileImageView.kf.indicatorType = .activity
-        profileImageView.kf.setImage(
-            with: imageUrl,
-            options: [
-                .processor(processor),
-                .scaleFactor(UIScreen.main.scale),
-                .cacheOriginalImage,
-                .forceRefresh
-            ]) { result in
-                
-                switch result {
-                case .success(let value):
-                    self.profileImageView.removeAnimatedGradient()
-                    self.logger.info(
-                        "Avatar loaded successfully",
-                        metadata: [
-                            "cacheType": .string("\(value.cacheType)"),
-                            "source": .string("\(value.source)")
-                        ]
-                    )
-                case .failure(let error):
-                    self.logger.error(
-                        "Failed to load avatar",
-                        metadata: [
-                            "errorMessage": .string("\(error.localizedDescription)"),
-                            "url": .string(profileImageURL)
-                        ]
-                    )
-                }
-            }
-    }
-    
-    private func updateProfileWith(profile: Profile) {
-        nameLabel.text = profile.name
-        loginLabel.text = profile.loginName
-        descriptionLabel.text = profile.bio
-        
-        nameLabel.sizeToFit()
-        loginLabel.sizeToFit()
-        descriptionLabel.sizeToFit()
-        removeAnimatedGradient()
-    }
-    
     private func updateGradientFrame() {
         nameLabel.updateAnimatedGradientFrame()
         loginLabel.updateAnimatedGradientFrame()
@@ -183,25 +197,6 @@ final class ProfileViewController: UIViewController {
     }
     
     @objc private func didTapLogoutButton() {
-        showAlert()
-    }
-    
-    private func showAlert() {
-        let alert = UIAlertController(
-            title: "Пока, пока!",
-            message: "Уверены что хотите выйти?",
-            preferredStyle: .alert)
-        
-        let noAction = UIAlertAction(title: "Нет", style: .cancel)
-        
-        let yesAction = UIAlertAction(title: "Да", style: .default) { [weak self] _ in
-            ProfileLogoutService.shared.logout()
-            let splachVC = SplashViewController()
-            self?.present(splachVC, animated: true)
-        }
-        alert.addAction(noAction)
-        alert.addAction(yesAction)
-        
-        self.present(alert, animated: true)
+        presenter?.didTapLogout()
     }
 }

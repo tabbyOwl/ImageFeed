@@ -21,12 +21,13 @@ protocol WebViewViewControllerDelegate: AnyObject {
 
 final class WebViewViewController: UIViewController, WebViewViewControllerProtocol {
     weak var delegate: WebViewViewControllerDelegate?
+    var presenter: WebViewPresenterProtocol?
     
     //MARK: - Private properties
     private let progressView = UIProgressView()
     private var webView = WKWebView()
     private var estimatedProgressObservation: NSKeyValueObservation?
-    var presenter: WebViewPresenterProtocol?
+    
     
     //MARK: - Life cycle
     override func viewDidLoad() {
@@ -57,6 +58,7 @@ final class WebViewViewController: UIViewController, WebViewViewControllerProtoc
     func setProgressHidden(_ isHidden: Bool) {
         progressView.isHidden = isHidden
     }
+    
     
     //MARK: - Private methods
     private func setupUI() {

@@ -7,13 +7,14 @@
 import UIKit
 import Logging
 
-final class ProfileService {
-    static let shared = ProfileService()
-    
-    private init(task: URLSessionTask? = nil) {
-        self.task = task
-    }
-    
+protocol ProfileServiceProtocol {
+    var profile: Profile? { get }
+    func fetchProfile(_ token: String, completion: @escaping (Result<Profile, Error>) -> Void)
+    func clearProfile()
+}
+
+final class ProfileService: ProfileServiceProtocol {
+   
     func clearProfile() {
         profile = nil
     }

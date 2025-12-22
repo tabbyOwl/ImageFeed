@@ -9,6 +9,19 @@ import UIKit
 
 final class TabBarController: UITabBarController {
     
+    private let profileService: ProfileServiceProtocol
+    private let profileImageService: ProfileImageServiceProtocol
+    
+    init(profileService: ProfileServiceProtocol, profileImageService: ProfileImageServiceProtocol) {
+        self.profileService = profileService
+        self.profileImageService = profileImageService
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTabBar()
@@ -31,6 +44,10 @@ final class TabBarController: UITabBarController {
         )
         
         let profileViewController = ProfileViewController()
+        
+        let presenter = ProfilePresenter(profileService: profileService, profileImageService: profileImageService)
+        profileViewController.presenter = presenter
+        presenter.view = profileViewController
         
         profileViewController.tabBarItem = UITabBarItem(
             title: "",

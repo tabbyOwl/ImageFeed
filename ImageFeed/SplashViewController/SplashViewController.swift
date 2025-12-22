@@ -7,29 +7,29 @@
 import UIKit
 import Logging
 
-final class SplashViewController: UIViewController {
+protocol SplashViewControllerProtocol: AnyObject {
+    var presenter: SplashViewPresenterProtocol? { get set }
+    func showLoading()
+    func hideLoading()
+    func showError(_ error: Error)
+    func switchToTabBar(profileService: ProfileServiceProtocol, profileImageService: ProfileImageServiceProtocol)
+    func presentAuthViewController()
+}
+
+final class SplashViewController: UIViewController, SplashViewControllerProtocol {
+    var presenter: SplashViewPresenterProtocol?
     
     //MARK: - Private properties
     private var imageView = UIImageView()
-    private let storage = OAuth2TokenStorage.shared
-    private let showAuthenticationScreenSegueIdentifier = "ShowAuthenticationScreenSegueIdentifier"
     weak var delegate: AuthViewControllerDelegate?
-    private let profileService = ProfileService.shared
-    private let profileImageService = ProfileImageService.shared
     private let logger = Logger(label: "SplashViewController")
+    
     //MARK: - Life cycle
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         setupUI()
-        if let token = storage.token {
-            fetchProfile(token: token)
-            switchToTabBarController()
-        } else {
-            let authViewController = AuthViewController()
-            authViewController.delegate = self
-            authViewController.modalPresentationStyle = .fullScreen
-            present(authViewController, animated: true)
-        }
+        
+        presenter?.viewDidAppear()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -37,6 +37,36 @@ final class SplashViewController: UIViewController {
         setNeedsStatusBarAppearanceUpdate()
     }
     
+    //MARK: - Public methods
+    func showLoading() {
+        UIBlockingProgressHUD.show()
+    }
+    
+    func hideLoading() {
+        UIBlockingProgressHUD.dismiss()
+    }
+    
+    func showError(_ error: any Error) {
+        logger.error("Failed to load profile info",metadata: [ "error": .string("\(error)")])
+    }
+    
+    func switchToTabBar(profileService: ProfileServiceProtocol, profileImageService: ProfileImageServiceProtocol) {
+        DispatchQueue.main.async {
+            let tabBarController = TabBarController(profileService: profileService, profileImageService: profileImageService)
+            tabBarController.modalPresentationStyle = .fullScreen
+            let navigationVC = UINavigationController(rootViewController: tabBarController)
+            navigationVC.modalPresentationStyle = .fullScreen
+            self.present(navigationVC, animated: true)
+        }
+    }
+    
+    func presentAuthViewController() {
+        let authViewController = AuthViewController()
+        authViewController.delegate = self
+        authViewController.modalPresentationStyle = .fullScreen
+        present(authViewController, animated: true)
+    }
+
     //MARK: - Private methods
     private func setupUI() {
         view.backgroundColor = .ypBlack
@@ -59,44 +89,13 @@ final class SplashViewController: UIViewController {
             imageView.heightAnchor.constraint(equalToConstant: 77)
         ])
     }
-    
-    private func fetchProfile(token: String) {
-        UIBlockingProgressHUD.show()
-        profileService.fetchProfile(token) { [weak self] result in
-            UIBlockingProgressHUD.dismiss()
-            
-            guard let self else { return }
-            
-            switch result {
-            case .success(let profile):
-                self.profileImageService.fetchProfileImageURL(username: profile.username) {_ in }
-                self.switchToTabBarController()
-            case .failure(let error):
-                self.logger.error("Failed to load profile info",metadata: [ "error": .string("\(error)")])
-            }
-        }
-    }
-    
-    private func switchToTabBarController() {
-        DispatchQueue.main.async {
-            let tabBarController = TabBarController()
-            tabBarController.modalPresentationStyle = .fullScreen
-            let navigationVC = UINavigationController(rootViewController: tabBarController)
-            navigationVC.modalPresentationStyle = .fullScreen
-            self.present(navigationVC, animated: true)
-        }
-    }
 }
 
 // MARK: -AuthViewControllerDelegate
 extension SplashViewController: AuthViewControllerDelegate {
     func didAuthenticate(_ vc: AuthViewController) {
-        DispatchQueue.main.async { [weak self] in
-            vc.dismiss(animated: true)
-            guard let token = self?.storage.token else {return}
-            self?.fetchProfile(token: token)
-        }
-        switchToTabBarController()
+        vc.dismiss(animated: true)
+        presenter?.didAuthenticate()
+        
     }
 }
-

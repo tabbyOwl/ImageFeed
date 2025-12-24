@@ -10,9 +10,14 @@ import CoreGraphics
 import SwiftKeychainWrapper
 import Logging
 
-final class ImagesListService {
+protocol ImagesListServiceProtocol {
+    var photos: [Photo] { get }
+    func fetchPhotosNextPage()
+    func changeLike(photoId: String, isLike: Bool, _ completion: @escaping (Result<Void, Error>) -> Void)
+}
+
+final class ImagesListService: ImagesListServiceProtocol {
     
-    static let shared = ImagesListService()
     static let didChangeNotification = Notification.Name("ImagesListServiceDidChange")
     
     private static let dateFormatter: ISO8601DateFormatter = {
@@ -24,8 +29,6 @@ final class ImagesListService {
     private var task: URLSessionTask?
     private var decoder = SnakeCaseJSONDecoder()
     private let logger = Logger(label: "ImagesListService")
-    
-    private init() {}
     
     func clearPhotos() {
         DispatchQueue.main.async {

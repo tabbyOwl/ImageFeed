@@ -13,15 +13,19 @@ final class TabBarController: UITabBarController {
     
     private let profileService: ProfileServiceProtocol
     private let profileImageService: ProfileImageServiceProtocol
+    private let imagesListService: ImagesListServiceProtocol
     private let tokenStorage: OAuth2TokenStorageProtocol
+    
     
     init(profileService: ProfileServiceProtocol,
          profileImageService: ProfileImageServiceProtocol,
+         imagesListService: ImagesListServiceProtocol,
          tokenStorage: OAuth2TokenStorageProtocol,
     ) {
         
         self.profileService = profileService
         self.profileImageService = profileImageService
+        self.imagesListService = imagesListService
         self.tokenStorage = tokenStorage
         super.init(nibName: nil, bundle: nil)
     }
@@ -49,6 +53,12 @@ final class TabBarController: UITabBarController {
     
     private func setControllersToTabBar() {
         let imagesListViewController = ImagesListViewController()
+        
+        let imagesListPresenter = ImagesListViewPresenter(imagesListService: imagesListService)
+        
+        imagesListViewController.presenter = imagesListPresenter
+        imagesListPresenter.view = imagesListViewController
+        
         imagesListViewController.tabBarItem = UITabBarItem(
             title: "",
             image: UIImage(resource: .tabEditorialActive),
@@ -57,14 +67,14 @@ final class TabBarController: UITabBarController {
         
         let profileViewController = ProfileViewController()
         
-        let presenter = ProfilePresenter(
+        let profilePresenter = ProfilePresenter(
             profileService: profileService,
             profileImageService: profileImageService,
             tokenStorage: tokenStorage)
         
-        profileViewController.presenter = presenter
-        presenter.view = profileViewController
-        presenter.coordinator = coordinator
+        profileViewController.presenter = profilePresenter
+        profilePresenter.view = profileViewController
+        profilePresenter.coordinator = coordinator
         
         profileViewController.tabBarItem = UITabBarItem(
             title: "",

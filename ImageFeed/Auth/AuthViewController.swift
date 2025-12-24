@@ -16,7 +16,16 @@ final class AuthViewController: UIViewController {
     //MARK: - Private properties
     private var imageView = UIImageView()
     private let enterButton = UIButton()
-    private let oauth2Service = OAuth2Service.shared
+    private let oauth2Service: OAuth2ServiceProtocol
+    
+    init(oauth2Service: OAuth2ServiceProtocol) {
+        self.oauth2Service = oauth2Service
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     //MARK: - Public properties
     weak var delegate: AuthViewControllerDelegate?
@@ -119,7 +128,6 @@ extension AuthViewController: WebViewViewControllerDelegate {
             switch result {
             case .success:
                 self.delegate?.didAuthenticate(self)
-                
             case .failure:
                 self.showAuthErrorAlert()
                 break

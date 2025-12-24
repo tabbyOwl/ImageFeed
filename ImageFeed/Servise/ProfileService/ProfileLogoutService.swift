@@ -8,17 +8,24 @@
 import Foundation
 import WebKit
 
-final class ProfileLogoutService {
+protocol ProfileLogoutServiceProtocol {
+    func logout()
+}
+
+final class ProfileLogoutService: ProfileLogoutServiceProtocol {
     private let profileService: ProfileServiceProtocol
     private let profileImageService: ProfileImageServiceProtocol
-    //       private let imagesListService: ImagesListServiceProtocol
+    private let tokenStorage: OAuth2TokenStorageProtocol
+    //private let imagesListService: ImagesListServiceProtocol
     
     init(
         profileService: ProfileServiceProtocol,
-        profileImageService: ProfileImageServiceProtocol
+        profileImageService: ProfileImageServiceProtocol,
+        tokenStorage: OAuth2TokenStorageProtocol
     ) {
         self.profileService = profileService
         self.profileImageService = profileImageService
+        self.tokenStorage = tokenStorage
     }
     
     func logout() {
@@ -36,10 +43,10 @@ final class ProfileLogoutService {
     }
     
     private func resetServicesData() {
-        profileService.clearProfile()
-        profileImageService.clearAvatar()
-        ImagesListService.shared.clearPhotos()
-        OAuth2TokenStorage.shared.clearToken()
+            self.tokenStorage.clearToken()
+            self.profileService.clearProfile()
+            self.profileImageService.clearAvatar()
+            //ImagesListService.shared.clearPhotos()
     }
 }
 

@@ -8,7 +8,7 @@ import UIKit
 import SwiftKeychainWrapper
 import Logging
 
-protocol ProfileImageServiceProtocol {
+protocol ProfileImageServiceProtocol: AnyObject {
     var avatarURL: String? { get }
     func fetchProfileImageURL(username: String, _ completion: @escaping (Result<String, Error>) -> Void)
     func clearAvatar() 
@@ -21,7 +21,6 @@ final class ProfileImageService: ProfileImageServiceProtocol {
     private var task: URLSessionTask?
     private var decoder = SnakeCaseJSONDecoder()
     private let logger = Logger(label: "ProfileImageService")
-    
     
     func clearAvatar() {
         avatarURL = nil

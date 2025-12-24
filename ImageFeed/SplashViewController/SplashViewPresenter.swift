@@ -4,53 +4,63 @@
 //
 //  Created by Svetlana on 2025/12/21.
 //
+import Foundation
 
 protocol SplashViewPresenterProtocol {
     func didAuthenticate()
     func viewDidAppear()
 }
 
+protocol SplashCoordinatorDelegate: AnyObject {
+    func showAuth()
+    func showMain()
+}
+
 final class SplashViewPresenter: SplashViewPresenterProtocol {
+    private var coordinator: SplashCoordinatorDelegate
     private weak var view: SplashViewControllerProtocol?
     private let profileService: ProfileServiceProtocol
     private let profileImageService: ProfileImageServiceProtocol
-    private let tokenStorage = OAuth2TokenStorage.shared
+    private let tokenStorage: OAuth2TokenStorageProtocol
     
     init(view: SplashViewControllerProtocol,
          profileService: ProfileServiceProtocol,
-         profileImageService: ProfileImageServiceProtocol) {
+         profileImageService: ProfileImageServiceProtocol,
+         tokenStorage: OAuth2TokenStorageProtocol,
+         coordinator: SplashCoordinatorDelegate) {
         self.view = view
         self.profileService = profileService
         self.profileImageService = profileImageService
+        self.tokenStorage = tokenStorage
+        self.coordinator = coordinator
     }
     
     func viewDidAppear() {
-        print("Splash appeared. Token = \(tokenStorage.token != nil)")
-        print("🍎") // MARK: viewDidAppear вызывается раньше чем удаляется токен!
-        if let token = tokenStorage.token {
-            fetchProfile(token: token)
-            print("🕎")
-        } else {
-            view?.presentAuthViewController()
+        if let token = self.tokenStorage.token {
+            self.fetchProfile(token: token)
         }
+        else {
+            self.coordinator.showAuth()
+        }
+        
     }
     
     func didAuthenticate() {
-        guard let token = tokenStorage.token else { return }
-        fetchProfile(token: token)
+        self.coordinator.showMain()
     }
     
     private func fetchProfile(token: String) {
         view?.showLoading()
         profileService.fetchProfile(token) { [weak self] result in
             guard let self else { return }
-            view?.hideLoading()
+            
+            self.view?.hideLoading()
             switch result {
             case .success(let profile):
-                profileImageService.fetchProfileImageURL(username: profile.username) { _ in }
-                view?.switchToTabBar(profileService: profileService, profileImageService: profileImageService)
+                self.profileImageService.fetchProfileImageURL(username: profile.username) { _ in }
+                self.coordinator.showMain()
             case .failure(let error):
-                view?.showError(error)
+                self.view?.showError(error)
             }
         }
     }

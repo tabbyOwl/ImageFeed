@@ -12,7 +12,6 @@ protocol ProfileViewControllerProtocol: AnyObject {
     func showProfile(with profile: Profile)
     func setAvatar(with url: URL)
     func showLogoutConfirmation()
-    func showSplashScreen()
 }
 
 final class ProfileViewController: UIViewController, ProfileViewControllerProtocol {
@@ -26,11 +25,12 @@ final class ProfileViewController: UIViewController, ProfileViewControllerProtoc
     
     private let logger = Logger(label: "ProfileViewController")
     var presenter: ProfilePresenterProtocol?
+    
     // MARK: - Life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        presenter?.viewDidLoad()
+            self.presenter?.viewDidLoad()
     }
     
     override func viewDidLayoutSubviews() {
@@ -83,11 +83,6 @@ final class ProfileViewController: UIViewController, ProfileViewControllerProtoc
                     )
                 }
             }
-    }
-    
-    func showSplashScreen() {
-            let splashVC = SplashViewController()
-            self.present(splashVC, animated: true)
     }
     
     func showLogoutConfirmation() {
@@ -197,6 +192,6 @@ final class ProfileViewController: UIViewController, ProfileViewControllerProtoc
     }
     
     @objc private func didTapLogoutButton() {
-        presenter?.didTapLogout()
+            self.presenter?.didTapLogout()
     }
 }

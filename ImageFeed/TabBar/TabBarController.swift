@@ -9,17 +9,30 @@ import UIKit
 
 final class TabBarController: UITabBarController {
     
+    weak var coordinator: ProfileCoordinatorDelegate?
+    
     private let profileService: ProfileServiceProtocol
     private let profileImageService: ProfileImageServiceProtocol
+    private let tokenStorage: OAuth2TokenStorageProtocol
     
-    init(profileService: ProfileServiceProtocol, profileImageService: ProfileImageServiceProtocol) {
+    init(profileService: ProfileServiceProtocol,
+         profileImageService: ProfileImageServiceProtocol,
+         tokenStorage: OAuth2TokenStorageProtocol,
+    ) {
+        
         self.profileService = profileService
         self.profileImageService = profileImageService
+        self.tokenStorage = tokenStorage
         super.init(nibName: nil, bundle: nil)
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        setControllersToTabBar()
     }
     
     override func viewDidLoad() {
@@ -31,12 +44,11 @@ final class TabBarController: UITabBarController {
         tabBar.backgroundColor = .ypBlack
         tabBar.tintColor = .ypWhite
         tabBar.unselectedItemTintColor = .ypWhiteAlpha50
-        setControllersToTabBar()
+      
     }
     
     private func setControllersToTabBar() {
         let imagesListViewController = ImagesListViewController()
-        
         imagesListViewController.tabBarItem = UITabBarItem(
             title: "",
             image: UIImage(resource: .tabEditorialActive),
@@ -45,16 +57,21 @@ final class TabBarController: UITabBarController {
         
         let profileViewController = ProfileViewController()
         
-        let presenter = ProfilePresenter(profileService: profileService, profileImageService: profileImageService)
+        let presenter = ProfilePresenter(
+            profileService: profileService,
+            profileImageService: profileImageService,
+            tokenStorage: tokenStorage)
+        
         profileViewController.presenter = presenter
         presenter.view = profileViewController
+        presenter.coordinator = coordinator
         
         profileViewController.tabBarItem = UITabBarItem(
             title: "",
             image: UIImage(resource: .tabProfileActive),
-            selectedImage: nil
-        )
+            selectedImage: nil)
         
         self.viewControllers = [imagesListViewController, profileViewController]
     }
 }
+

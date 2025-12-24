@@ -7,18 +7,22 @@
 import UIKit
 import Logging
 
-final class OAuth2Service {
-    
-    static let shared = OAuth2Service()
-    private init() {}
-    
-    private let storage = OAuth2TokenStorage.shared
+protocol OAuth2ServiceProtocol {
+    func fetchOauthToken(code: String, completion: @escaping (Result<String, Error>) -> Void)
+}
+
+final class OAuth2Service: OAuth2ServiceProtocol {
+    private var storage: OAuth2TokenStorageProtocol
     private let decoder = SnakeCaseJSONDecoder()
     
     private let logger = Logger(label: "OAuth2Service")
     private var urlSession = URLSession.shared
     private var task: URLSessionTask?
     private var lastCode: String?
+    
+    init(storage: OAuth2TokenStorageProtocol) {
+        self.storage = storage
+    }
     
     func fetchOauthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread)

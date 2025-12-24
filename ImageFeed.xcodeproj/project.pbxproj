@@ -41,16 +41,24 @@
 		3FBEC5832EF68BFA0089E2C3 /* Exceptions for "ImageFeedTests" folder in "ImageFeed" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				WebViewPresenterSpy.swift,
-				WebViewViewControllerSpy.swift,
+				ProfileTests/Mocks/ProfileImageServiceMock.swift,
+				ProfileTests/Mocks/ProfileServiceMock.swift,
+				ProfileTests/Spies/ProfileCoordinatorSpy.swift,
+				ProfileTests/Spies/ProfileViewControllerSpy.swift,
+				WebViewTests/WebViewPresenterSpy.swift,
+				WebViewTests/WebViewViewControllerSpy.swift,
 			);
 			target = 3F7904832ED8363A0034D098 /* ImageFeed */;
 		};
 		3FBEC5842EF68BFA0089E2C3 /* Exceptions for "ImageFeedTests" folder in "ImageFeedTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				WebViewPresenterSpy.swift,
-				WebViewViewControllerSpy.swift,
+				ProfileTests/Mocks/ProfileImageServiceMock.swift,
+				ProfileTests/Mocks/ProfileServiceMock.swift,
+				ProfileTests/Spies/ProfileCoordinatorSpy.swift,
+				ProfileTests/Spies/ProfileViewControllerSpy.swift,
+				WebViewTests/WebViewPresenterSpy.swift,
+				WebViewTests/WebViewViewControllerSpy.swift,
 			);
 			target = 3FBA68E12EEAAF3C00F3AFE5 /* ImageFeedTests */;
 		};

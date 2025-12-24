@@ -12,8 +12,6 @@ protocol SplashViewControllerProtocol: AnyObject {
     func showLoading()
     func hideLoading()
     func showError(_ error: Error)
-    func switchToTabBar(profileService: ProfileServiceProtocol, profileImageService: ProfileImageServiceProtocol)
-    func presentAuthViewController()
 }
 
 final class SplashViewController: UIViewController, SplashViewControllerProtocol {
@@ -21,14 +19,12 @@ final class SplashViewController: UIViewController, SplashViewControllerProtocol
     
     //MARK: - Private properties
     private var imageView = UIImageView()
-    weak var delegate: AuthViewControllerDelegate?
     private let logger = Logger(label: "SplashViewController")
     
     //MARK: - Life cycle
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         setupUI()
-        
         presenter?.viewDidAppear()
     }
     
@@ -48,23 +44,6 @@ final class SplashViewController: UIViewController, SplashViewControllerProtocol
     
     func showError(_ error: any Error) {
         logger.error("Failed to load profile info",metadata: [ "error": .string("\(error)")])
-    }
-    
-    func switchToTabBar(profileService: ProfileServiceProtocol, profileImageService: ProfileImageServiceProtocol) {
-        DispatchQueue.main.async {
-            let tabBarController = TabBarController(profileService: profileService, profileImageService: profileImageService)
-            tabBarController.modalPresentationStyle = .fullScreen
-            let navigationVC = UINavigationController(rootViewController: tabBarController)
-            navigationVC.modalPresentationStyle = .fullScreen
-            self.present(navigationVC, animated: true)
-        }
-    }
-    
-    func presentAuthViewController() {
-        let authViewController = AuthViewController()
-        authViewController.delegate = self
-        authViewController.modalPresentationStyle = .fullScreen
-        present(authViewController, animated: true)
     }
 
     //MARK: - Private methods
@@ -88,14 +67,5 @@ final class SplashViewController: UIViewController, SplashViewControllerProtocol
             imageView.widthAnchor.constraint(equalToConstant: 75),
             imageView.heightAnchor.constraint(equalToConstant: 77)
         ])
-    }
-}
-
-// MARK: -AuthViewControllerDelegate
-extension SplashViewController: AuthViewControllerDelegate {
-    func didAuthenticate(_ vc: AuthViewController) {
-        vc.dismiss(animated: true)
-        presenter?.didAuthenticate()
-        
     }
 }

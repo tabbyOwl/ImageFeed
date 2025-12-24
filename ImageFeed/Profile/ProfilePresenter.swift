@@ -12,21 +12,29 @@ protocol ProfilePresenterProtocol {
     func confirmLogout()
 }
 
+protocol ProfileCoordinatorDelegate: AnyObject {
+    func didLogout()
+}
+
 final class ProfilePresenter: ProfilePresenterProtocol {
-    var view: ProfileViewControllerProtocol?
+    weak var view: ProfileViewControllerProtocol?
+    weak var coordinator: ProfileCoordinatorDelegate?
     
     private var profileImageServiceObserver: NSObjectProtocol?
     private var profileService: ProfileServiceProtocol
     private var profileImageService: ProfileImageServiceProtocol
+    private var tokenStorage: OAuth2TokenStorageProtocol
+    private var logoutService: ProfileLogoutServiceProtocol?
     
-    init(profileService: ProfileServiceProtocol, profileImageService: ProfileImageServiceProtocol) {
+    init(profileService: ProfileServiceProtocol, profileImageService: ProfileImageServiceProtocol, tokenStorage: OAuth2TokenStorageProtocol) {
         self.profileService = profileService
         self.profileImageService = profileImageService
+        self.tokenStorage = tokenStorage
     }
     
     func viewDidLoad() {
         if let profile = profileService.profile {
-            view?.showProfile(with: profile)
+                self.view?.showProfile(with: profile)
         }
         loadAvatar()
     }
@@ -38,14 +46,17 @@ final class ProfilePresenter: ProfilePresenterProtocol {
     }
     
     func didTapLogout() {
-        view?.showLogoutConfirmation()
+            self.view?.showLogoutConfirmation()
     }
     
-    
     func confirmLogout() {
-        let profileLogoutService = ProfileLogoutService(profileService: profileService, profileImageService: profileImageService)
-        profileLogoutService.logout()
-        view?.showSplashScreen()
+        self.logoutService = ProfileLogoutService(profileService: self.profileService, profileImageService: self.profileImageService, tokenStorage: self.tokenStorage)
+        
+            self.logoutService?.logout()
+        
+            DispatchQueue.main.async {
+                self.coordinator?.didLogout()
+        }
     }
     
     private func loadAvatar() {
@@ -53,7 +64,7 @@ final class ProfilePresenter: ProfilePresenterProtocol {
             let urlString = profileImageService.avatarURL,
             let url = URL(string: urlString)
         else { return }
-        view?.setAvatar(with: url)
+            self.view?.setAvatar(with: url)
     }
     
     private func observeAvatarChanges() {

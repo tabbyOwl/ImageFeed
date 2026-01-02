@@ -13,7 +13,6 @@ final class WebViewViewControllerSpy: WebViewViewControllerProtocol {
     var loadRequestCalled: Bool = false
 
     func load(_ request: URLRequest) {
-        print("🍎 spy load")
         loadRequestCalled = true
     }
 

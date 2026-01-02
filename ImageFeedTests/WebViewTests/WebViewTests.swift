@@ -8,24 +8,6 @@
 @testable import ImageFeed
 import XCTest
 
-final class AuthHelperMock: AuthHelperProtocol {
-    var request: URLRequest?
-
-    init() {
-        self.request = URLRequest(
-            url: URL(fileURLWithPath: "/")
-        )
-    }
-
-    func authRequest() -> URLRequest? {
-        request
-    }
-
-    func code(from url: URL) -> String? {
-        nil
-    }
-}
-
 @MainActor
 final class WebViewTests: XCTestCase {
  
@@ -46,7 +28,7 @@ final class WebViewTests: XCTestCase {
     func testPresenterCallsLoadRequest() {
         // given
         let view = WebViewViewControllerSpy()
-        let authHelper = AuthHelperMock()
+        let authHelper = AuthHelper()
         let presenter = WebViewPresenter(authHelper: authHelper)
         presenter.view = view
         view.presenter = presenter

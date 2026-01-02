@@ -23,7 +23,7 @@ final class ImagesListViewController: UIViewController, ImagesListViewController
     
     // MARK: - Private properties
     private let tableView = UITableView()
-     
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,21 +32,20 @@ final class ImagesListViewController: UIViewController, ImagesListViewController
     }
     
     func reloadData() {
-            self.tableView.reloadData()
+        self.tableView.reloadData()
     }
     
     func reloadRows(indexPaths: [IndexPath]) {
-            self.tableView.reloadRows(at: indexPaths, with: .none)
+        self.tableView.reloadRows(at: indexPaths, with: .none)
     }
     
     func insertRows(oldCount: Int, newCount: Int) {
-            self.tableView.performBatchUpdates {
-                let indexPaths = (oldCount..<newCount).map { i in
-                    IndexPath(row: i, section: 0)
-                }
-                self.tableView.insertRows(at: indexPaths, with: .automatic)
-            } completion: { _ in }
-        
+        self.tableView.performBatchUpdates {
+            let indexPaths = (oldCount..<newCount).map { i in
+                IndexPath(row: i, section: 0)
+            }
+            self.tableView.insertRows(at: indexPaths, with: .automatic)
+        } completion: { _ in }
     }
     
     func hideLoadingHUD() {
@@ -117,7 +116,6 @@ extension ImagesListViewController: UITableViewDelegate {
         if let photo = presenter?.getPhoto(at: indexPath.row) {
             let url = photo.fullImageURL
             singleImageVC.url = url
-            
             navigationController?.pushViewController(singleImageVC, animated: true)
         }
     }

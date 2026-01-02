@@ -12,12 +12,13 @@ import Logging
 
 protocol ImagesListServiceProtocol {
     var photos: [Photo] { get }
+    func clearPhotos()
     func fetchPhotosNextPage()
     func changeLike(photoId: String, isLike: Bool, _ completion: @escaping (Result<Void, Error>) -> Void)
+    
 }
 
 final class ImagesListService: ImagesListServiceProtocol {
-    
     static let didChangeNotification = Notification.Name("ImagesListServiceDidChange")
     
     private static let dateFormatter: ISO8601DateFormatter = {
@@ -75,22 +76,32 @@ final class ImagesListService: ImagesListServiceProtocol {
         task.resume()
     }
     
-    func changeLike(photoId: String, isLike: Bool, _ completion: @escaping (Result<Void, Error>) -> Void) {
-        if let index = photos.firstIndex(where: { $0.id == photoId }) {
-            let photo = photos[index]
-            
-            let newPhoto = Photo(
-                id: photo.id,
-                size: photo.size,
-                createdAt: photo.createdAt,
-                welcomeDescription: photo.welcomeDescription,
-                thumbImageURL: photo.thumbImageURL,
-                fullImageURL: photo.fullImageURL,
-                isLiked: !photo.isLiked
-            )
-            self.photos[index] = newPhoto
-            completion(.success(()))
+    func changeLike(
+        photoId: String,
+        isLike: Bool,
+        _ completion: @escaping (Result<Void, Error>) -> Void
+    ) {
+        guard let token = KeychainWrapper.standard.string(forKey: Constants.oAuthTokenKey) else {
+            completion(.failure(NetworkError.invalidToken))
+            return
         }
+
+        let request = makeLikeRequest(photoId: photoId, isLike: isLike, token: token)
+
+        let task = URLSession.shared.data(for: request) { [weak self] result in
+            switch result {
+            case .success:
+                self?.updateLikeState(photoId: photoId)
+                completion(.success(()))
+
+            case .failure(let error):
+                self?.logger.error("Failed to change like",
+                                   metadata: ["photoId": .string(photoId), "error": "\(error)"])
+                completion(.failure(error))
+            }
+        }
+
+        task.resume()
     }
     
     private func convert(photoResult: PhotoResult) -> Photo {
@@ -129,5 +140,32 @@ final class ImagesListService: ImagesListServiceProtocol {
         request.httpMethod = HTTPMethod.get.rawValue
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         return request
+    }
+    
+    private func makeLikeRequest(
+        photoId: String,
+        isLike: Bool,
+        token: String
+    ) -> URLRequest {
+        let url = URL(string: "https://api.unsplash.com/photos/\(photoId)/like")!
+        var request = URLRequest(url: url)
+        request.httpMethod = isLike ? HTTPMethod.delete.rawValue : HTTPMethod.post.rawValue
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        return request
+    }
+    
+    private func updateLikeState(photoId: String) {
+        guard let index = photos.firstIndex(where: { $0.id == photoId }) else { return }
+
+        let oldPhoto = photos[index]
+        photos[index] = Photo(
+            id: oldPhoto.id,
+            size: oldPhoto.size,
+            createdAt: oldPhoto.createdAt,
+            welcomeDescription: oldPhoto.welcomeDescription,
+            thumbImageURL: oldPhoto.thumbImageURL,
+            fullImageURL: oldPhoto.fullImageURL,
+            isLiked: !oldPhoto.isLiked
+        )
     }
 }

@@ -14,11 +14,6 @@ protocol ProfileServiceProtocol {
 }
 
 final class ProfileService: ProfileServiceProtocol {
-   
-    func clearProfile() {
-        profile = nil
-    }
-    
     private(set) var profile: Profile?
     private var task: URLSessionTask?
     private var decoder = SnakeCaseJSONDecoder()
@@ -63,6 +58,9 @@ final class ProfileService: ProfileServiceProtocol {
         task.resume()
     }
     
+    func clearProfile() {
+        profile = nil
+    }
     
     private func makeProfileRequest(token: String) -> URLRequest? {
         guard let url = URL(string: "https://api.unsplash.com/me") else {

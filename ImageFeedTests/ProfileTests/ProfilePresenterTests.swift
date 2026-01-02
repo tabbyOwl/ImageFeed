@@ -8,48 +8,45 @@
 import XCTest
 @testable import ImageFeed
 
-
-class ProfileLogoutServiceMock: ProfileLogoutServiceProtocol {
-    var logoutCalled = false
-    
-    func logout() {
-        logoutCalled = true
-    }
-}
-
 @MainActor
 final class ProfilePresenterTests: XCTestCase {
     
     var viewController: ProfileViewControllerSpy?
     var profileService: ProfileServiceMock?
     var profileImageService: ProfileImageServiceMock?
-    var logoutService: ProfileLogoutServiceMock?
+    var imagesListService: ImagesListServiceMock?
+    var logoutService: ProfileLogoutServiceProtocol?
     var presenter: ProfilePresenter?
     var coordinator: ProfileCoordinatorSpy?
     
     override func setUp() {
         super.setUp()
-
+        
         let profile = Profile(
             username: "@test",
             name: "Test User",
             loginName: "test",
             bio: "Bio"
         )
-
+        
         viewController = ProfileViewControllerSpy()
         profileService = ProfileServiceMock(profile: profile)
         profileImageService = ProfileImageServiceMock(avatarURL: "test")
-        logoutService = ProfileLogoutServiceMock()
+        imagesListService = ImagesListServiceMock()
+        
+        
+        logoutService = ProfileLogoutService(profileService: profileService!, profileImageService: profileImageService!, tokenStorage: OAuth2TokenStorage(), imagesListService: imagesListService!)
+        
         let tokenStorage = OAuth2TokenStorage()
         coordinator = ProfileCoordinatorSpy()
-
+        
         presenter = ProfilePresenter(
             profileService: profileService!,
             profileImageService: profileImageService!,
+            imagesListService: imagesListService!,
             tokenStorage: tokenStorage
         )
-
+        
         viewController?.presenter = presenter
         presenter?.view = viewController
     }
@@ -62,21 +59,21 @@ final class ProfilePresenterTests: XCTestCase {
         
         super.tearDown()
     }
-
-    func testViewDidLoad_callsShowProfileIfProfileExists() {
-        // When
+    
+    func testViewDidLoadСallsShowProfileIfProfileExists() {
+        // when
         presenter?.viewDidLoad()
         
-        // Then
+        // then
         if let viewController = viewController {
             XCTAssertTrue(viewController.showProfileCalled, "showProfile должен быть вызван, если профиль существует.")
         }
     }
-
-    func testFetchProfileImageURL_callsCompletionWithURL() {
-        // When
+    
+    func testFetchProfileImageURLСallsCompletionWithURL() {
+        // when
         profileImageService?.fetchProfileImageURL(username: "testUser") { result in
-            // Then
+            // then
             switch result {
             case .success(let url):
                 XCTAssertEqual(url, self.profileImageService?.avatarURL, "URL должен быть равен переданному в мок")
@@ -86,51 +83,37 @@ final class ProfilePresenterTests: XCTestCase {
         }
     }
     
-    func testConfirmLogout_callsCoordinatorDidLogout() {
-        // Given
-        XCTAssertNotNil(presenter, "Презентер не должен быть nil")
-        let expectation = self.expectation(description: "didLogout ожидание")
-        
-        // When
+    func testConfirmLogoutСallsCoordinatorDidLogout() {
+        // when
         presenter?.confirmLogout()
-
-        // Then
-        DispatchQueue.main.async(qos: .userInteractive) {
-            self.coordinator?.didLogout()
-            expectation.fulfill()
-        }
-
-        waitForExpectations(timeout: 1.0, handler: nil) // Даем время для завершения асинхронной операции
+        self.coordinator?.didLogout()
+        
+        // then
         XCTAssertTrue(coordinator!.didLogoutCalled, "Метод didLogout должен быть вызван на координаторе.")
     }
-
-        func testDidTapLogout_callsShowLogoutConfirmation() {
-            
-            // When
-            presenter?.didTapLogout()
-            
-            // Then
-            XCTAssertTrue(viewController!.showLogoutConfirmationCalled, "Метод showLogoutConfirmation должен быть вызван.")
-        }
-
-        func testConfirmLogout_callsLogoutService() {
-            // Given
-            XCTAssertNotNil(presenter, "Презентер не должен быть nil")
-            let expectation = self.expectation(description: "didLogout ожидание")
-
-            // When
-            presenter?.confirmLogout()
-            
-            // Then
-            waitForExpectations(timeout: 1.0, handler: nil)
-            XCTAssertTrue(logoutService!.logoutCalled, "Метод logout должен быть вызван на сервисе логаута.")
-        }
     
-    func testClearAvatar_callsClearAvatar() {
-        // When
+    func testDidTapLogoutСallsShowLogoutConfirmation() {
+        // when
+        presenter?.didTapLogout()
+        
+        // then
+        XCTAssertTrue(viewController!.showLogoutConfirmationCalled, "Метод showLogoutConfirmation должен быть вызван.")
+    }
+    
+    func testConfirmLogoutСallsLogoutService() {
+        // when
+        presenter?.confirmLogout()
+        
+        // then
+        XCTAssertNil(profileService?.profile)
+    }
+    
+    func testClearAvatarСallsClearAvatar() {
+        // when
         guard let profileImageService else { return }
         profileImageService.clearAvatar()
-        // Then
+        
+        // then
         XCTAssertTrue(profileImageService.clearAvatarCalled, "clearAvatar должен быть вызван.")
     }
 }

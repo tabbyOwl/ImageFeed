@@ -2,9 +2,8 @@
 //  WebViewPresenterSpy.swift
 //  ImageFeed
 //
-//  Created by Svetlana on 2025/12/20.
+//  Created by Svetlana on 2025/12/28.
 //
-
 import Foundation
 
 final class WebViewPresenterSpy: WebViewPresenterProtocol {
@@ -16,10 +15,9 @@ final class WebViewPresenterSpy: WebViewPresenterProtocol {
     }
     
     func didUpdateProgressValue(_ newValue: Double) {
-    
     }
     
     func code(from url: URL) -> String? {
         return nil
     }
-}
+} 

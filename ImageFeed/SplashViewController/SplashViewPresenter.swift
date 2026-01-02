@@ -42,7 +42,6 @@ final class SplashViewPresenter: SplashViewPresenterProtocol {
         else {
             self.coordinator.showAuth()
         }
-        
     }
     
     func didAuthenticate() {

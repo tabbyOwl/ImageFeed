@@ -15,7 +15,6 @@ protocol ProfileViewControllerProtocol: AnyObject {
 }
 
 final class ProfileViewController: UIViewController, ProfileViewControllerProtocol {
-    
     // MARK: - Private properties
     private let profileImageView = UIImageView()
     private let nameLabel =  UILabel()
@@ -30,7 +29,7 @@ final class ProfileViewController: UIViewController, ProfileViewControllerProtoc
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-            self.presenter?.viewDidLoad()
+        presenter?.viewDidLoad()
     }
     
     override func viewDidLayoutSubviews() {
@@ -114,6 +113,7 @@ final class ProfileViewController: UIViewController, ProfileViewControllerProtoc
         setupLabel(label: nameLabel, font: Fonts.sfProTextBold23, color: .ypWhite)
         setupLabel(label: loginLabel, font: Fonts.sfProTextRegular13, color: .ypGray)
         setupLabel(label: descriptionLabel, font: Fonts.sfProTextRegular13, color: .ypWhite)
+        setupIdentifiers()
         setupLogoutButton()
         setupConstraints()
     }
@@ -140,6 +140,12 @@ final class ProfileViewController: UIViewController, ProfileViewControllerProtoc
         label.clipsToBounds = true
         label.addAnimatedGradient()
         view.addSubview(label)
+    }
+    
+    private func setupIdentifiers() {
+        nameLabel.accessibilityIdentifier = "Lastname"
+        loginLabel.accessibilityIdentifier = "Login"
+        logoutButton.accessibilityIdentifier = "LogoutButton"
     }
     
     @objc private func setupLogoutButton() {
@@ -192,6 +198,6 @@ final class ProfileViewController: UIViewController, ProfileViewControllerProtoc
     }
     
     @objc private func didTapLogoutButton() {
-            self.presenter?.didTapLogout()
+        self.presenter?.didTapLogout()
     }
 }

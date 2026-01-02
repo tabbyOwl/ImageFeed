@@ -8,7 +8,7 @@ import ImageFeed
 
 final class ProfileCoordinatorSpy: ProfileCoordinatorDelegate {
     var didLogoutCalled = false
-
+    
     func didLogout() {
         didLogoutCalled = true
     }

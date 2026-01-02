@@ -8,7 +8,7 @@ import UIKit
 import Logging
 
 protocol OAuth2ServiceProtocol {
-    func fetchOauthToken(code: String, completion: @escaping (Result<String, Error>) -> Void)
+    func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void)
 }
 
 final class OAuth2Service: OAuth2ServiceProtocol {
@@ -24,7 +24,7 @@ final class OAuth2Service: OAuth2ServiceProtocol {
         self.storage = storage
     }
     
-    func fetchOauthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
+    func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread)
         guard lastCode != code else {
             logger.warning("Duplicate OAuth code request: \(code)")

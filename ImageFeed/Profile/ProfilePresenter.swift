@@ -20,23 +20,23 @@ final class ProfilePresenter: ProfilePresenterProtocol {
     weak var view: ProfileViewControllerProtocol?
     weak var coordinator: ProfileCoordinatorDelegate?
     
+    // MARK: - Private properties
     private var profileImageServiceObserver: NSObjectProtocol?
     private var profileService: ProfileServiceProtocol
     private var profileImageService: ProfileImageServiceProtocol
+    private var imagesListService: ImagesListServiceProtocol
     private var tokenStorage: OAuth2TokenStorageProtocol
     private var logoutService: ProfileLogoutServiceProtocol?
     
-    init(profileService: ProfileServiceProtocol, profileImageService: ProfileImageServiceProtocol, tokenStorage: OAuth2TokenStorageProtocol) {
+    init(profileService: ProfileServiceProtocol,
+         profileImageService: ProfileImageServiceProtocol,
+         imagesListService: ImagesListServiceProtocol,
+         tokenStorage: OAuth2TokenStorageProtocol)
+    {
         self.profileService = profileService
         self.profileImageService = profileImageService
+        self.imagesListService = imagesListService
         self.tokenStorage = tokenStorage
-    }
-    
-    func viewDidLoad() {
-        if let profile = profileService.profile {
-                self.view?.showProfile(with: profile)
-        }
-        loadAvatar()
     }
     
     deinit {
@@ -45,26 +45,36 @@ final class ProfilePresenter: ProfilePresenterProtocol {
         }
     }
     
+    // MARK: - Life cycle
+    func viewDidLoad() {
+        if let profile = profileService.profile {
+            self.view?.showProfile(with: profile)
+        }
+        loadAvatar()
+    }
+    
+    // MARK: - Public methods
     func didTapLogout() {
-            self.view?.showLogoutConfirmation()
+        self.view?.showLogoutConfirmation()
     }
     
     func confirmLogout() {
-        self.logoutService = ProfileLogoutService(profileService: self.profileService, profileImageService: self.profileImageService, tokenStorage: self.tokenStorage)
+        logoutService = ProfileLogoutService(profileService: profileService, profileImageService: profileImageService, tokenStorage: tokenStorage, imagesListService: imagesListService)
         
-            self.logoutService?.logout()
+        logoutService?.logout()
         
-            DispatchQueue.main.async {
-                self.coordinator?.didLogout()
+        DispatchQueue.main.async {
+            self.coordinator?.didLogout()
         }
     }
     
+    // MARK: - Private methods
     private func loadAvatar() {
         guard
             let urlString = profileImageService.avatarURL,
             let url = URL(string: urlString)
         else { return }
-            self.view?.setAvatar(with: url)
+        self.view?.setAvatar(with: url)
     }
     
     private func observeAvatarChanges() {

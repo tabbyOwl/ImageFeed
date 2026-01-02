@@ -8,21 +8,19 @@
 import UIKit
 
 final class TabBarController: UITabBarController {
-    
     weak var coordinator: ProfileCoordinatorDelegate?
     
+    //MARK: -Private properties
     private let profileService: ProfileServiceProtocol
     private let profileImageService: ProfileImageServiceProtocol
     private let imagesListService: ImagesListServiceProtocol
     private let tokenStorage: OAuth2TokenStorageProtocol
-    
     
     init(profileService: ProfileServiceProtocol,
          profileImageService: ProfileImageServiceProtocol,
          imagesListService: ImagesListServiceProtocol,
          tokenStorage: OAuth2TokenStorageProtocol,
     ) {
-        
         self.profileService = profileService
         self.profileImageService = profileImageService
         self.imagesListService = imagesListService
@@ -30,10 +28,12 @@ final class TabBarController: UITabBarController {
         super.init(nibName: nil, bundle: nil)
     }
     
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        nil
     }
     
+    //MARK: - Life cycle
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setControllersToTabBar()
@@ -44,14 +44,24 @@ final class TabBarController: UITabBarController {
         setupTabBar()
     }
     
+    //MARK: -Private methods
     private func setupTabBar() {
         tabBar.backgroundColor = .ypBlack
         tabBar.tintColor = .ypWhite
         tabBar.unselectedItemTintColor = .ypWhiteAlpha50
-      
+        
     }
     
     private func setControllersToTabBar() {
+        let imagesListViewController = makeImagesListViewController()
+        let imagesListNavigationViewController = UINavigationController(rootViewController: imagesListViewController)
+        
+        let profileViewController = makeProfileViewController()
+        
+        self.viewControllers = [imagesListNavigationViewController, profileViewController]
+    }
+    
+    private func makeImagesListViewController() -> ImagesListViewController {
         let imagesListViewController = ImagesListViewController()
         
         let imagesListPresenter = ImagesListViewPresenter(imagesListService: imagesListService)
@@ -64,12 +74,16 @@ final class TabBarController: UITabBarController {
             image: UIImage(resource: .tabEditorialActive),
             selectedImage: nil
         )
-        
+        return imagesListViewController
+    }
+    
+    private func makeProfileViewController() -> ProfileViewController {
         let profileViewController = ProfileViewController()
         
         let profilePresenter = ProfilePresenter(
             profileService: profileService,
             profileImageService: profileImageService,
+            imagesListService: imagesListService,
             tokenStorage: tokenStorage)
         
         profileViewController.presenter = profilePresenter
@@ -80,8 +94,7 @@ final class TabBarController: UITabBarController {
             title: "",
             image: UIImage(resource: .tabProfileActive),
             selectedImage: nil)
-        
-        self.viewControllers = [imagesListViewController, profileViewController]
+        return profileViewController
     }
 }
 

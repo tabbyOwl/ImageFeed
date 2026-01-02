@@ -26,8 +26,8 @@ final class WebViewPresenter: WebViewPresenterProtocol {
             assertionFailure("Failed to construct authorization URLRequest")
             return
         }
-        
-        view?.load(request: request)
+        print("🍎\(view)")
+        view?.load(request)
         didUpdateProgressValue(0)
     }
     
@@ -40,7 +40,7 @@ final class WebViewPresenter: WebViewPresenterProtocol {
     }
     
     func shouldHideProgress(for value: Float) -> Bool {
-        return abs(value - 1.0) <= 0.0001
+        abs(value - 1.0) <= 0.0001
     }
     
     func code(from url: URL) -> String? {

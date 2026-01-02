@@ -16,15 +16,16 @@ final class AuthViewController: UIViewController {
     //MARK: - Private properties
     private var imageView = UIImageView()
     private let enterButton = UIButton()
-    private let oauth2Service: OAuth2ServiceProtocol
+    private let oAuth2Service: OAuth2ServiceProtocol
     
-    init(oauth2Service: OAuth2ServiceProtocol) {
-        self.oauth2Service = oauth2Service
+    init(oAuth2Service: OAuth2ServiceProtocol) {
+        self.oAuth2Service = oAuth2Service
         super.init(nibName: nil, bundle: nil)
     }
     
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        nil
     }
     
     //MARK: - Public properties
@@ -63,6 +64,7 @@ final class AuthViewController: UIViewController {
         enterButton.layer.cornerRadius = 16
         enterButton.addTarget(self, action: #selector(didTapEnterButton), for: .touchUpInside)
         enterButton.backgroundColor = .ypWhite
+        enterButton.accessibilityIdentifier = "Authenticate"
         view.addSubview(enterButton)
     }
     
@@ -134,12 +136,16 @@ extension AuthViewController: WebViewViewControllerDelegate {
             }
         }
     }
+    
+    func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
+        vc.dismiss(animated: true)
+    }
 }
 
 //MARK: - fetchOAuthToken
 extension AuthViewController {
     private func fetchOAuthToken(_ code: String, completion: @escaping (Result<String, Error>) -> Void) {
-        oauth2Service.fetchOauthToken(code: code) { result in
+        oAuth2Service.fetchOAuthToken(code: code) { result in
             completion(result)
         }
     }

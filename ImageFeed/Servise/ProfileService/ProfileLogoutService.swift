@@ -16,16 +16,18 @@ final class ProfileLogoutService: ProfileLogoutServiceProtocol {
     private let profileService: ProfileServiceProtocol
     private let profileImageService: ProfileImageServiceProtocol
     private let tokenStorage: OAuth2TokenStorageProtocol
-    //private let imagesListService: ImagesListServiceProtocol
+    private let imagesListService: ImagesListServiceProtocol
     
     init(
         profileService: ProfileServiceProtocol,
         profileImageService: ProfileImageServiceProtocol,
-        tokenStorage: OAuth2TokenStorageProtocol
+        tokenStorage: OAuth2TokenStorageProtocol,
+        imagesListService: ImagesListServiceProtocol
     ) {
         self.profileService = profileService
         self.profileImageService = profileImageService
         self.tokenStorage = tokenStorage
+        self.imagesListService = imagesListService
     }
     
     func logout() {
@@ -43,10 +45,10 @@ final class ProfileLogoutService: ProfileLogoutServiceProtocol {
     }
     
     private func resetServicesData() {
-            self.tokenStorage.clearToken()
             self.profileService.clearProfile()
             self.profileImageService.clearAvatar()
-            //ImagesListService.shared.clearPhotos()
+            self.imagesListService.clearPhotos()
+            self.tokenStorage.clearToken()
     }
 }
 

@@ -9,11 +9,11 @@ import Foundation
 
 final class ProfileServiceMock: ProfileServiceProtocol {
     var profile: Profile?
-
+    
     init(profile: Profile?) {
         self.profile = profile
     }
-
+    
     func fetchProfile(
         _ token: String,
         completion: @escaping (Result<Profile, Error>) -> Void
@@ -24,7 +24,7 @@ final class ProfileServiceMock: ProfileServiceProtocol {
             completion(.failure(NSError(domain: "test", code: 0)))
         }
     }
-
+    
     func clearProfile() {
         profile = nil
     }

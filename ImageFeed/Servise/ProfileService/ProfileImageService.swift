@@ -11,7 +11,7 @@ import Logging
 protocol ProfileImageServiceProtocol: AnyObject {
     var avatarURL: String? { get }
     func fetchProfileImageURL(username: String, _ completion: @escaping (Result<String, Error>) -> Void)
-    func clearAvatar() 
+    func clearAvatar()
 }
 
 final class ProfileImageService: ProfileImageServiceProtocol {
@@ -42,7 +42,6 @@ final class ProfileImageService: ProfileImageServiceProtocol {
         let task = URLSession.shared.objectTask(for: request) {[weak self] (result: Result<UserResult, Error>) in
             switch result {
             case .success(let data):
-                
                 guard let self else { return }
                 let avatar = data.profileImage.large
                 self.avatarURL = avatar

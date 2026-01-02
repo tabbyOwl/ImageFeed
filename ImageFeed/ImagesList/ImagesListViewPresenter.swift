@@ -17,9 +17,13 @@ protocol ImagesListViewPresenterProtocol {
 }
 
 final class ImagesListViewPresenter: ImagesListViewPresenterProtocol {
-    
     weak var view: ImagesListViewControllerProtocol?
     
+    var photosCount: Int {
+        photos.count
+    }
+    
+    //MARK: - Private properties
     private var photos = [Photo]()
     private var imagesListService: ImagesListServiceProtocol
     private var imagesListServiceObserver: NSObjectProtocol?
@@ -28,23 +32,21 @@ final class ImagesListViewPresenter: ImagesListViewPresenterProtocol {
         self.imagesListService = imagesListService
     }
     
+    deinit {
+        if let observer = imagesListServiceObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+    
+    //MARK: - Life Cycle
     func viewDidLoad() {
         observeImagesListChanges()
         fetchPhotosNextPage()
     }
     
-    var photosCount: Int {
-        photos.count
-    }
-
+    //MARK: - Public methods
     func getPhoto(at index: Int) -> Photo {
         photos[index]
-    }
-    
-    deinit {
-        if let observer = imagesListServiceObserver {
-            NotificationCenter.default.removeObserver(observer)
-        }
     }
     
     func getPhotos() -> [Photo] {
@@ -76,6 +78,7 @@ final class ImagesListViewPresenter: ImagesListViewPresenterProtocol {
                 guard let self else { return }
                 switch result {
                 case .success:
+                    self.photos = self.imagesListService.photos
                     self.view?.reloadRows(indexPaths: [indexPath])
                 case .failure:
                     self.view?.showError()
@@ -84,6 +87,7 @@ final class ImagesListViewPresenter: ImagesListViewPresenterProtocol {
         }
     }
     
+    //MARK: - Private methods
     private func observeImagesListChanges() {
         imagesListServiceObserver = NotificationCenter.default
             .addObserver(
@@ -100,11 +104,11 @@ final class ImagesListViewPresenter: ImagesListViewPresenterProtocol {
         let oldCount = photos.count
         let newPhotos = imagesListService.photos
         let newCount = newPhotos.count
-
+        
         guard newCount > oldCount else { return }
-
+        
         photos = newPhotos
-
+        
         if oldCount == 0 {
             view?.reloadData()
         } else {

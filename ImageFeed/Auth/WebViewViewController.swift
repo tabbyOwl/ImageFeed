@@ -10,13 +10,14 @@ import WebKit
 
 public protocol WebViewViewControllerProtocol: AnyObject {
     var presenter: WebViewPresenterProtocol? { get set }
-    func load(request: URLRequest)
+    func load(_ request: URLRequest)
     func setProgressValue(_ newValue: Float)
     func setProgressHidden(_ isHidden: Bool)
 }
 
 protocol WebViewViewControllerDelegate: AnyObject {
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String)
+    func webViewViewControllerDidCancel(_ vc: WebViewViewController)
 }
 
 final class WebViewViewController: UIViewController, WebViewViewControllerProtocol {
@@ -28,33 +29,26 @@ final class WebViewViewController: UIViewController, WebViewViewControllerProtoc
     private var webView = WKWebView()
     private var estimatedProgressObservation: NSKeyValueObservation?
     
-    
     //MARK: - Life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         setupBackButton()
-        
-        estimatedProgressObservation = webView.observe(
-            \.estimatedProgress,
-             options: [],
-             changeHandler: { [weak self] _, _ in
-                 guard let self else { return }
-                 presenter?.didUpdateProgressValue(webView.estimatedProgress)
-             })
+        setProgressObservation()
         
         webView.navigationDelegate = self
         presenter?.viewDidLoad()
     }
-  
-    func load(request: URLRequest) {
+    
+    //MARK: - Public methods
+    func load(_ request: URLRequest) {
         webView.load(request)
     }
     
     func setProgressValue(_ newValue: Float) {
         progressView.progress = newValue
     }
-
+    
     func setProgressHidden(_ isHidden: Bool) {
         progressView.isHidden = isHidden
     }
@@ -71,6 +65,7 @@ final class WebViewViewController: UIViewController, WebViewViewControllerProtoc
     private func setupWebView() {
         webView.translatesAutoresizingMaskIntoConstraints = false
         webView.navigationDelegate = self
+        webView.accessibilityIdentifier = "UnsplashWebView"
         view.addSubview(webView)
     }
     
@@ -89,8 +84,18 @@ final class WebViewViewController: UIViewController, WebViewViewControllerProtoc
         )
     }
     
+    private func setProgressObservation() {
+        estimatedProgressObservation = webView.observe(
+            \.estimatedProgress,
+             options: [],
+             changeHandler: { [weak self] _, _ in
+                 guard let self else { return }
+                 presenter?.didUpdateProgressValue(webView.estimatedProgress)
+             })
+    }
+    
     @objc private func didTapBack() {
-        dismiss(animated: true)
+        delegate?.webViewViewControllerDidCancel(self)
     }
     
     private func setupConstraints() {

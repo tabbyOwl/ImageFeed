@@ -17,17 +17,16 @@ final class ProfileViewControllerSpy: ProfileViewControllerProtocol {
     init(profile: Profile? = nil) {
         self.profile = profile
     }
-
+    
     func showProfile(with profile: Profile) {
         showProfileCalled = true
     }
-
+    
     func setAvatar(with url: URL) {
         setAvatarCalled = true
     }
-
+    
     func showLogoutConfirmation() {
         showLogoutConfirmationCalled = true
     }
-
 }

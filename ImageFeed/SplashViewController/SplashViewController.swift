@@ -45,7 +45,7 @@ final class SplashViewController: UIViewController, SplashViewControllerProtocol
     func showError(_ error: any Error) {
         logger.error("Failed to load profile info",metadata: [ "error": .string("\(error)")])
     }
-
+    
     //MARK: - Private methods
     private func setupUI() {
         view.backgroundColor = .ypBlack

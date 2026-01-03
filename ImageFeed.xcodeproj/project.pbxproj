@@ -55,6 +55,7 @@
 				ProfileTests/Mocks/ProfileServiceMock.swift,
 				ProfileTests/Spies/ProfileCoordinatorSpy.swift,
 				ProfileTests/Spies/ProfileViewControllerSpy.swift,
+				WebViewTests/Mocks/AuthHelperMock.swift,
 				WebViewTests/Mocks/WebViewPresenterSpy.swift,
 				WebViewTests/Mocks/WebViewViewControllerSpy.swift,
 			);
@@ -69,6 +70,7 @@
 				ProfileTests/Mocks/ProfileServiceMock.swift,
 				ProfileTests/Spies/ProfileCoordinatorSpy.swift,
 				ProfileTests/Spies/ProfileViewControllerSpy.swift,
+				WebViewTests/Mocks/AuthHelperMock.swift,
 				WebViewTests/Mocks/WebViewPresenterSpy.swift,
 				WebViewTests/Mocks/WebViewViewControllerSpy.swift,
 			);

@@ -26,7 +26,6 @@ final class WebViewPresenter: WebViewPresenterProtocol {
             assertionFailure("Failed to construct authorization URLRequest")
             return
         }
-        print("🍎\(view)")
         view?.load(request)
         didUpdateProgressValue(0)
     }

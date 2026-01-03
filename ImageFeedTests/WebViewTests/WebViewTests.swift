@@ -4,46 +4,65 @@
 //
 //  Created by Svetlana on 2025/12/20.
 //
-
 @testable import ImageFeed
 import XCTest
 
 @MainActor
 final class WebViewTests: XCTestCase {
- 
-    func testViewControllerCallsViewDidLoad() {
-        //given
-        let viewController = WebViewViewController()
-        let presenter = WebViewPresenterSpy()
-        viewController.presenter = presenter
-        presenter.view = viewController
+    
+    var view: WebViewViewController!
+    var presenter: WebViewPresenter!
+    var authHelper: AuthHelperMock!
+    
+    var viewSpy: WebViewViewControllerSpy!
+    var presenterSpy: WebViewPresenterSpy!
+    
+    let configuration = AuthConfiguration.standard
+    
+    override func setUp() {
+        super.setUp()
+        view = WebViewViewController()
+        authHelper = AuthHelperMock()
+        presenterSpy = WebViewPresenterSpy()
+       
+        view.presenter = presenterSpy
+        presenterSpy.view = view
         
+        viewSpy = WebViewViewControllerSpy()
+        presenter = WebViewPresenter(authHelper: authHelper)
+        viewSpy.presenter = presenter
+        presenter.view = viewSpy
+    }
+    
+    override func tearDown() {
+        presenter = nil
+        authHelper = nil
+        view = nil
+        viewSpy = nil
+        presenterSpy = nil
+        super.tearDown()
+    }
+    
+    func testViewControllerCallsViewDidLoad() {
         //when
-        _ = viewController.view
+        _ = view.view
         
         //then
-        XCTAssertTrue(presenter.viewDidLoadCalled)
+        XCTAssertTrue(presenterSpy.viewDidLoadCalled)
     }
     
     func testPresenterCallsLoadRequest() {
-        // given
-        let view = WebViewViewControllerSpy()
-        let authHelper = AuthHelper()
-        let presenter = WebViewPresenter(authHelper: authHelper)
-        presenter.view = view
-        view.presenter = presenter
-        
-        //when
+ 
+        // when
         presenter.viewDidLoad()
         
         // then
-        XCTAssertTrue(view.loadRequestCalled)
+        XCTAssertTrue(viewSpy.loadRequestCalled)
+        XCTAssertTrue(authHelper.authRequestCalled)
     }
     
     func testProgressVisibleWhenLessThenOne() {
         //given
-        let authHelper = AuthHelper()
-        let presenter = WebViewPresenter(authHelper: authHelper)
         let progress: Float = 0.6
         
         //when
@@ -55,8 +74,6 @@ final class WebViewTests: XCTestCase {
     
     func testProgressHiddenWhenOne() {
         //given
-        let authHelper = AuthHelper() //Dummy
-        let presenter = WebViewPresenter(authHelper: authHelper)
         let progress: Float = 1.0
         
         //when
@@ -73,12 +90,12 @@ final class WebViewTests: XCTestCase {
         
         //when
         let url = authHelper.authURL()
-
+        
         guard let urlString = url?.absoluteString else {
             XCTFail("Auth URL is nil")
             return
         }
-
+        
         //then
         XCTAssertTrue(urlString.contains(configuration.authURLString))
         XCTAssertTrue(urlString.contains(configuration.accessKey))
@@ -100,6 +117,6 @@ final class WebViewTests: XCTestCase {
         //then
         XCTAssertEqual(code, "test code")
     }
-    
+
     
 }

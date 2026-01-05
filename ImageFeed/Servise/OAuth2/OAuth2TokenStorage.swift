@@ -7,12 +7,13 @@
 import Foundation
 import SwiftKeychainWrapper
 
-final class OAuth2TokenStorage {
-    
-    static let shared = OAuth2TokenStorage()
-    private init() {}
-    
-    
+protocol OAuth2TokenStorageProtocol {
+    var token: String? { get set }
+    func clearToken() 
+}
+
+final class OAuth2TokenStorage: OAuth2TokenStorageProtocol {
+
     var token: String? {
         get {
             return KeychainWrapper.standard.string(forKey: Constants.oAuthTokenKey)

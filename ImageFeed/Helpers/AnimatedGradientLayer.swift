@@ -23,8 +23,9 @@ final class AnimatedGradientLayer: CAGradientLayer {
         super.init(layer: layer)
     }
     
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
-        super.init(coder: coder)
+        nil
     }
     
     func startAnimating(duration: CFTimeInterval = 1.0) {

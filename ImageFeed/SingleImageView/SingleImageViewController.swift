@@ -12,7 +12,6 @@ final class SingleImageViewController: UIViewController {
     
     // MARK: - Private properties
     private let scrollView = UIScrollView()
-    private let backButton = UIButton()
     private let imageView = UIImageView()
     private let shareButton = UIButton()
     
@@ -25,22 +24,18 @@ final class SingleImageViewController: UIViewController {
         setupUI()
         loadImage()
     }
+    
     // MARK: - Private methods
     private func setupUI() {
+        setupBackgroud()
         setupScrollView()
         setupImageView()
-        setupBackButton()
         setupShareButton()
         setupConstraints()
     }
     
-    private func setupBackButton() {
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
-            image: UIImage(resource: .backward),
-            style: .plain,
-            target: self,
-            action: #selector(didTapBackButton)
-        )
+    private func setupBackgroud() {
+        view.backgroundColor = .ypBlack
     }
     
     private func setupScrollView() {
@@ -56,6 +51,7 @@ final class SingleImageViewController: UIViewController {
     private func setupImageView() {
         imageView.contentMode = .scaleAspectFit
         imageView.frame = .zero
+        imageView.accessibilityIdentifier = AccessibilityIdentifier.SingleImage.imageView
         scrollView.addSubview(imageView)
     }
     
@@ -118,10 +114,8 @@ final class SingleImageViewController: UIViewController {
     
     private func configureFor(image: UIImage) {
         imageView.image = image
-        
         imageView.frame = CGRect(origin: .zero, size: image.size)
         scrollView.contentSize = image.size
-        
         rescaleAndCenterImage()
     }
     
@@ -134,6 +128,7 @@ final class SingleImageViewController: UIViewController {
             guard let self else { return }
             switch result {
             case .success(let result):
+                
                 configureFor(image: result.image)
             case .failure:
                 showError()
@@ -158,15 +153,15 @@ final class SingleImageViewController: UIViewController {
         self.present(alert, animated: true)
     }
     
+    @objc private func didTapBackButton(_ sender: Any) {
+        dismiss(animated: true)
+    }
+    
     @objc private func didTapShareButton(_ sender: UIButton) {
         if let image = self.imageView.image {
             let activityViewController = UIActivityViewController(activityItems: [image], applicationActivities: nil)
             present(activityViewController, animated: true, completion: nil)
         }
-    }
-    
-    @objc private func didTapBackButton(_ sender: Any) {
-        navigationController?.popViewController(animated: true)
     }
 }
 

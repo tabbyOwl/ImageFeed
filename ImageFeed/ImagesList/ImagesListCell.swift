@@ -12,7 +12,6 @@ protocol ImagesListCellDelegate: AnyObject {
 }
 
 final class ImagesListCell: UITableViewCell {
-    
     static let reuseIdentifier = "ImagesListCell"
     weak var delegate: ImagesListCellDelegate?
     
@@ -66,6 +65,9 @@ final class ImagesListCell: UITableViewCell {
     func setLike(isLiked: Bool) {
         let likeImage = isLiked ? UIImage(resource: .active) : UIImage(resource: .noActive)
         likeButton.setImage(likeImage, for: .normal)
+        
+        let id = isLiked ? AccessibilityIdentifier.ImageList.likeButtonActive : AccessibilityIdentifier.ImageList.likeButtonNonActive
+        likeButton.accessibilityIdentifier = id
     }
     
     //MARK: - Private methods
@@ -96,7 +98,7 @@ final class ImagesListCell: UITableViewCell {
     
     private func setupLikeButton() {
         likeButton.translatesAutoresizingMaskIntoConstraints = false
-        likeButton.setImage(UIImage(resource: .active), for: .normal)
+        likeButton.setImage(UIImage(resource: .noActive), for: .normal)
         likeButton.addTarget(self, action: #selector(likeButtonTapped), for: .touchUpInside)
         likeButton.setTitle("", for: .normal)
         contentView.addSubview(likeButton)

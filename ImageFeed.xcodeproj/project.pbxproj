@@ -9,12 +9,19 @@
 /* Begin PBXBuildFile section */
 		3F6AD5092EE03EFF00ED9DC9 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F6AD5082EE03EFF00ED9DC9 /* WebKit.framework */; };
 		3F73B02F2EE6791600719F32 /* SwiftKeychainWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 3F73B02E2EE6791600719F32 /* SwiftKeychainWrapper */; };
-		3FB9C05E2EE56E98006CFCFF /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 3FB9C05D2EE56E98006CFCFF /* Kingfisher */; };
 		3FD819CA2EF3C8CC00E5D6A6 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 3FD819C92EF3C8CC00E5D6A6 /* Logging */; };
 		3FF96F3D2EE3FFD7007DBEED /* ProgressHUD in Frameworks */ = {isa = PBXBuildFile; productRef = 3FF96F3C2EE3FFD7007DBEED /* ProgressHUD */; };
+		3FFC26CE2F0A3E0E00D9137D /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 3FFC26CD2F0A3E0E00D9137D /* Kingfisher */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		3F3E0ED42F010F8D008B4295 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3F79047C2ED8363A0034D098 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3F7904832ED8363A0034D098;
+			remoteInfo = ImageFeed;
+		};
 		3FBA68E62EEAAF3C00F3AFE5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 3F79047C2ED8363A0034D098 /* Project object */;
@@ -25,12 +32,20 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3F3E0ECE2F010F8D008B4295 /* ImageFeedUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageFeedUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3F6AD5082EE03EFF00ED9DC9 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		3F7904842ED8363A0034D098 /* ImageFeed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImageFeed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3FBA68E22EEAAF3C00F3AFE5 /* ImageFeedTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageFeedTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		3F0300982F0BC2BF0004CD07 /* Exceptions for "ImageFeed" folder in "ImageFeedUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				AccessibilityIdentifier.swift,
+			);
+			target = 3F3E0ECD2F010F8D008B4295 /* ImageFeedUITests */;
+		};
 		3F7904962ED8363B0034D098 /* Exceptions for "ImageFeed" folder in "ImageFeed" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -38,34 +53,81 @@
 			);
 			target = 3F7904832ED8363A0034D098 /* ImageFeed */;
 		};
+		3FBEC5832EF68BFA0089E2C3 /* Exceptions for "ImageFeedTests" folder in "ImageFeed" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ImagesListTests/ImagesListServiceMock.swift,
+				ImagesListTests/ImagesListViewControllerSpy.swift,
+				ProfileTests/Mocks/ProfileImageServiceMock.swift,
+				ProfileTests/Mocks/ProfileServiceMock.swift,
+				ProfileTests/Spies/ProfileCoordinatorSpy.swift,
+				ProfileTests/Spies/ProfileViewControllerSpy.swift,
+				WebViewTests/Mocks/AuthHelperMock.swift,
+				WebViewTests/Mocks/WebViewPresenterSpy.swift,
+				WebViewTests/Mocks/WebViewViewControllerSpy.swift,
+			);
+			target = 3F7904832ED8363A0034D098 /* ImageFeed */;
+		};
+		3FBEC5842EF68BFA0089E2C3 /* Exceptions for "ImageFeedTests" folder in "ImageFeedTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ImagesListTests/ImagesListServiceMock.swift,
+				ImagesListTests/ImagesListViewControllerSpy.swift,
+				ProfileTests/Mocks/ProfileImageServiceMock.swift,
+				ProfileTests/Mocks/ProfileServiceMock.swift,
+				ProfileTests/Spies/ProfileCoordinatorSpy.swift,
+				ProfileTests/Spies/ProfileViewControllerSpy.swift,
+				WebViewTests/Mocks/AuthHelperMock.swift,
+				WebViewTests/Mocks/WebViewPresenterSpy.swift,
+				WebViewTests/Mocks/WebViewViewControllerSpy.swift,
+			);
+			target = 3FBA68E12EEAAF3C00F3AFE5 /* ImageFeedTests */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		3F3E0ECF2F010F8D008B4295 /* ImageFeedUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ImageFeedUITests;
+			sourceTree = "<group>";
+		};
 		3F7904862ED8363A0034D098 /* ImageFeed */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				3F7904962ED8363B0034D098 /* Exceptions for "ImageFeed" folder in "ImageFeed" target */,
+				3F0300982F0BC2BF0004CD07 /* Exceptions for "ImageFeed" folder in "ImageFeedUITests" target */,
 			);
 			path = ImageFeed;
 			sourceTree = "<group>";
 		};
 		3FBA68E32EEAAF3C00F3AFE5 /* ImageFeedTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				3FBEC5832EF68BFA0089E2C3 /* Exceptions for "ImageFeedTests" folder in "ImageFeed" target */,
+				3FBEC5842EF68BFA0089E2C3 /* Exceptions for "ImageFeedTests" folder in "ImageFeedTests" target */,
+			);
 			path = ImageFeedTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		3F3E0ECB2F010F8D008B4295 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3F7904812ED8363A0034D098 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3FB9C05E2EE56E98006CFCFF /* Kingfisher in Frameworks */,
 				3F6AD5092EE03EFF00ED9DC9 /* WebKit.framework in Frameworks */,
 				3F73B02F2EE6791600719F32 /* SwiftKeychainWrapper in Frameworks */,
 				3FF96F3D2EE3FFD7007DBEED /* ProgressHUD in Frameworks */,
 				3FD819CA2EF3C8CC00E5D6A6 /* Logging in Frameworks */,
+				3FFC26CE2F0A3E0E00D9137D /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -92,6 +154,7 @@
 			children = (
 				3F7904862ED8363A0034D098 /* ImageFeed */,
 				3FBA68E32EEAAF3C00F3AFE5 /* ImageFeedTests */,
+				3F3E0ECF2F010F8D008B4295 /* ImageFeedUITests */,
 				3F6AD5072EE03EFF00ED9DC9 /* Frameworks */,
 				3F7904852ED8363A0034D098 /* Products */,
 			);
@@ -102,6 +165,7 @@
 			children = (
 				3F7904842ED8363A0034D098 /* ImageFeed.app */,
 				3FBA68E22EEAAF3C00F3AFE5 /* ImageFeedTests.xctest */,
+				3F3E0ECE2F010F8D008B4295 /* ImageFeedUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -109,6 +173,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		3F3E0ECD2F010F8D008B4295 /* ImageFeedUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3F3E0ED62F010F8D008B4295 /* Build configuration list for PBXNativeTarget "ImageFeedUITests" */;
+			buildPhases = (
+				3F3E0ECA2F010F8D008B4295 /* Sources */,
+				3F3E0ECB2F010F8D008B4295 /* Frameworks */,
+				3F3E0ECC2F010F8D008B4295 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3F3E0ED52F010F8D008B4295 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				3F3E0ECF2F010F8D008B4295 /* ImageFeedUITests */,
+			);
+			name = ImageFeedUITests;
+			packageProductDependencies = (
+			);
+			productName = ImageFeedUITests;
+			productReference = 3F3E0ECE2F010F8D008B4295 /* ImageFeedUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		3F7904832ED8363A0034D098 /* ImageFeed */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3F7904972ED8363B0034D098 /* Build configuration list for PBXNativeTarget "ImageFeed" */;
@@ -127,9 +214,9 @@
 			name = ImageFeed;
 			packageProductDependencies = (
 				3FF96F3C2EE3FFD7007DBEED /* ProgressHUD */,
-				3FB9C05D2EE56E98006CFCFF /* Kingfisher */,
 				3F73B02E2EE6791600719F32 /* SwiftKeychainWrapper */,
 				3FD819C92EF3C8CC00E5D6A6 /* Logging */,
+				3FFC26CD2F0A3E0E00D9137D /* Kingfisher */,
 			);
 			productName = ImageFeed;
 			productReference = 3F7904842ED8363A0034D098 /* ImageFeed.app */;
@@ -168,6 +255,10 @@
 				LastSwiftUpdateCheck = 2600;
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
+					3F3E0ECD2F010F8D008B4295 = {
+						CreatedOnToolsVersion = 26.0.1;
+						TestTargetID = 3F7904832ED8363A0034D098;
+					};
 					3F7904832ED8363A0034D098 = {
 						CreatedOnToolsVersion = 26.0.1;
 					};
@@ -188,9 +279,9 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				3FF96F3B2EE3FFD7007DBEED /* XCRemoteSwiftPackageReference "ProgressHUD" */,
-				3FB9C05C2EE56E98006CFCFF /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				3F73B02D2EE6791600719F32 /* XCRemoteSwiftPackageReference "SwiftKeychainWrapper" */,
 				3FD819C82EF3B7CF00E5D6A6 /* XCRemoteSwiftPackageReference "swift-log" */,
+				3FFC26CC2F0A3DCF00D9137D /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3F7904852ED8363A0034D098 /* Products */;
@@ -199,11 +290,19 @@
 			targets = (
 				3F7904832ED8363A0034D098 /* ImageFeed */,
 				3FBA68E12EEAAF3C00F3AFE5 /* ImageFeedTests */,
+				3F3E0ECD2F010F8D008B4295 /* ImageFeedUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		3F3E0ECC2F010F8D008B4295 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3F7904822ED8363A0034D098 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -221,6 +320,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		3F3E0ECA2F010F8D008B4295 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3F7904802ED8363A0034D098 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -238,6 +344,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		3F3E0ED52F010F8D008B4295 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3F7904832ED8363A0034D098 /* ImageFeed */;
+			targetProxy = 3F3E0ED42F010F8D008B4295 /* PBXContainerItemProxy */;
+		};
 		3FBA68E72EEAAF3C00F3AFE5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 3F7904832ED8363A0034D098 /* ImageFeed */;
@@ -246,6 +357,44 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		3F3E0ED72F010F8D008B4295 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "ru.spo-17.ImageFeedUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ImageFeed;
+			};
+			name = Debug;
+		};
+		3F3E0ED82F010F8D008B4295 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "ru.spo-17.ImageFeedUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ImageFeed;
+			};
+			name = Release;
+		};
 		3F7904982ED8363B0034D098 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -478,6 +627,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		3F3E0ED62F010F8D008B4295 /* Build configuration list for PBXNativeTarget "ImageFeedUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3F3E0ED72F010F8D008B4295 /* Debug */,
+				3F3E0ED82F010F8D008B4295 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		3F79047F2ED8363A0034D098 /* Build configuration list for PBXProject "ImageFeed" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -516,14 +674,6 @@
 				version = 4.0.1;
 			};
 		};
-		3FB9C05C2EE56E98006CFCFF /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
-			requirement = {
-				kind = exactVersion;
-				version = 8.6.2;
-			};
-		};
 		3FD819C82EF3B7CF00E5D6A6 /* XCRemoteSwiftPackageReference "swift-log" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-log";
@@ -540,6 +690,14 @@
 				version = 14.1.4;
 			};
 		};
+		3FFC26CC2F0A3DCF00D9137D /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+			requirement = {
+				kind = exactVersion;
+				version = 8.6.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -547,11 +705,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3F73B02D2EE6791600719F32 /* XCRemoteSwiftPackageReference "SwiftKeychainWrapper" */;
 			productName = SwiftKeychainWrapper;
-		};
-		3FB9C05D2EE56E98006CFCFF /* Kingfisher */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 3FB9C05C2EE56E98006CFCFF /* XCRemoteSwiftPackageReference "Kingfisher" */;
-			productName = Kingfisher;
 		};
 		3FD819C92EF3C8CC00E5D6A6 /* Logging */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -562,6 +715,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3FF96F3B2EE3FFD7007DBEED /* XCRemoteSwiftPackageReference "ProgressHUD" */;
 			productName = ProgressHUD;
+		};
+		3FFC26CD2F0A3E0E00D9137D /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3FFC26CC2F0A3DCF00D9137D /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

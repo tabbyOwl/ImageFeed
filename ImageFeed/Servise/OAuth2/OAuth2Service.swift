@@ -7,12 +7,12 @@
 import UIKit
 import Logging
 
-final class OAuth2Service {
-    
-    static let shared = OAuth2Service()
-    private init() {}
-    
-    private let storage = OAuth2TokenStorage.shared
+protocol OAuth2ServiceProtocol {
+    func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void)
+}
+
+final class OAuth2Service: OAuth2ServiceProtocol {
+    private var storage: OAuth2TokenStorageProtocol
     private let decoder = SnakeCaseJSONDecoder()
     
     private let logger = Logger(label: "OAuth2Service")
@@ -20,7 +20,11 @@ final class OAuth2Service {
     private var task: URLSessionTask?
     private var lastCode: String?
     
-    func fetchOauthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
+    init(storage: OAuth2TokenStorageProtocol) {
+        self.storage = storage
+    }
+    
+    func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread)
         guard lastCode != code else {
             logger.warning("Duplicate OAuth code request: \(code)")

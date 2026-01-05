@@ -16,7 +16,17 @@ final class AuthViewController: UIViewController {
     //MARK: - Private properties
     private var imageView = UIImageView()
     private let enterButton = UIButton()
-    private let oauth2Service = OAuth2Service.shared
+    private let oAuth2Service: OAuth2ServiceProtocol
+    
+    init(oAuth2Service: OAuth2ServiceProtocol) {
+        self.oAuth2Service = oAuth2Service
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        nil
+    }
     
     //MARK: - Public properties
     weak var delegate: AuthViewControllerDelegate?
@@ -54,6 +64,7 @@ final class AuthViewController: UIViewController {
         enterButton.layer.cornerRadius = 16
         enterButton.addTarget(self, action: #selector(didTapEnterButton), for: .touchUpInside)
         enterButton.backgroundColor = .ypWhite
+        enterButton.accessibilityIdentifier = AccessibilityIdentifier.Auth.enterButton
         view.addSubview(enterButton)
     }
     
@@ -88,9 +99,13 @@ final class AuthViewController: UIViewController {
     }
     
     private func showWebView() {
-        let webVC = WebViewViewController()
-        webVC.delegate = self
-        let navVC = UINavigationController(rootViewController: webVC)
+        let webViewViewController = WebViewViewController()
+        let authHelper = AuthHelper()
+        let webViewPresenter = WebViewPresenter(authHelper: authHelper)
+        webViewViewController.presenter = webViewPresenter
+        webViewPresenter.view = webViewViewController
+        webViewViewController.delegate = self
+        let navVC = UINavigationController(rootViewController: webViewViewController)
         
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
@@ -115,19 +130,22 @@ extension AuthViewController: WebViewViewControllerDelegate {
             switch result {
             case .success:
                 self.delegate?.didAuthenticate(self)
-                
             case .failure:
                 self.showAuthErrorAlert()
                 break
             }
         }
     }
+    
+    func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
+        vc.dismiss(animated: true)
+    }
 }
 
 //MARK: - fetchOAuthToken
 extension AuthViewController {
     private func fetchOAuthToken(_ code: String, completion: @escaping (Result<String, Error>) -> Void) {
-        oauth2Service.fetchOauthToken(code: code) { result in
+        oAuth2Service.fetchOAuthToken(code: code) { result in
             completion(result)
         }
     }

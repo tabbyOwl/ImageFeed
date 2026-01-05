@@ -7,17 +7,13 @@
 import UIKit
 import Logging
 
-final class ProfileService {
-    static let shared = ProfileService()
-    
-    private init(task: URLSessionTask? = nil) {
-        self.task = task
-    }
-    
-    func clearProfile() {
-        profile = nil
-    }
-    
+protocol ProfileServiceProtocol {
+    var profile: Profile? { get }
+    func fetchProfile(_ token: String, completion: @escaping (Result<Profile, Error>) -> Void)
+    func clearProfile()
+}
+
+final class ProfileService: ProfileServiceProtocol {
     private(set) var profile: Profile?
     private var task: URLSessionTask?
     private var decoder = SnakeCaseJSONDecoder()
@@ -62,6 +58,9 @@ final class ProfileService {
         task.resume()
     }
     
+    func clearProfile() {
+        profile = nil
+    }
     
     private func makeProfileRequest(token: String) -> URLRequest? {
         guard let url = URL(string: "https://api.unsplash.com/me") else {

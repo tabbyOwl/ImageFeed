@@ -8,18 +8,19 @@ import UIKit
 import SwiftKeychainWrapper
 import Logging
 
-final class ProfileImageService {
-    static let shared = ProfileImageService()
+protocol ProfileImageServiceProtocol: AnyObject {
+    var avatarURL: String? { get }
+    func fetchProfileImageURL(username: String, _ completion: @escaping (Result<String, Error>) -> Void)
+    func clearAvatar()
+}
+
+final class ProfileImageService: ProfileImageServiceProtocol {
     static let didChangeNotification = Notification.Name("ProfileImageProviderDidChange")
     
     private(set) var avatarURL: String?
     private var task: URLSessionTask?
     private var decoder = SnakeCaseJSONDecoder()
     private let logger = Logger(label: "ProfileImageService")
-    
-    private init(task: URLSessionTask? = nil) {
-        self.task = task
-    }
     
     func clearAvatar() {
         avatarURL = nil
@@ -41,7 +42,6 @@ final class ProfileImageService {
         let task = URLSession.shared.objectTask(for: request) {[weak self] (result: Result<UserResult, Error>) in
             switch result {
             case .success(let data):
-                
                 guard let self else { return }
                 let avatar = data.profileImage.large
                 self.avatarURL = avatar

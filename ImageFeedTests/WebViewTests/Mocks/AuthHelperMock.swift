@@ -7,18 +7,19 @@
 import Foundation
 
 final class AuthHelperMock: AuthHelperProtocol {
-    
     var authRequestCalled = false
+    
     var stubbedRequest: URLRequest? = URLRequest(
         url: URL(string: "https://test.com")!
     )
     
-    func authRequest() -> URLRequest? {
+    var authURLRequest: URLRequest? {
         authRequestCalled = true
         return stubbedRequest
     }
     
-    func code(from url: URL) -> String? {
+    
+    func getCode(from url: URL) -> String? {
         return "test_code"
     }
 }

@@ -51,7 +51,7 @@ final class SingleImageViewController: UIViewController {
     private func setupImageView() {
         imageView.contentMode = .scaleAspectFit
         imageView.frame = .zero
-        imageView.accessibilityIdentifier = "SingleImageView"
+        imageView.accessibilityIdentifier = AccessibilityIdentifier.SingleImage.imageView
         scrollView.addSubview(imageView)
     }
     

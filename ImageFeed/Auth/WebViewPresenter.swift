@@ -22,7 +22,7 @@ final class WebViewPresenter: WebViewPresenterProtocol {
     }
     
     func viewDidLoad() {
-        guard let request = authHelper.authRequest() else {
+        guard let request = authHelper.authURLRequest else {
             assertionFailure("Failed to construct authorization URLRequest")
             return
         }
@@ -43,6 +43,6 @@ final class WebViewPresenter: WebViewPresenterProtocol {
     }
     
     func code(from url: URL) -> String? {
-        authHelper.code(from: url)
+        authHelper.getCode(from: url)
     }
 }

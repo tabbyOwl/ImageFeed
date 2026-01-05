@@ -143,9 +143,9 @@ final class ProfileViewController: UIViewController, ProfileViewControllerProtoc
     }
     
     private func setupIdentifiers() {
-        nameLabel.accessibilityIdentifier = "Lastname"
-        loginLabel.accessibilityIdentifier = "Login"
-        logoutButton.accessibilityIdentifier = "LogoutButton"
+        nameLabel.accessibilityIdentifier = AccessibilityIdentifier.Profile.nameLabel
+        loginLabel.accessibilityIdentifier = AccessibilityIdentifier.Profile.loginLabel
+        logoutButton.accessibilityIdentifier = AccessibilityIdentifier.Profile.logoutButton
     }
     
     @objc private func setupLogoutButton() {

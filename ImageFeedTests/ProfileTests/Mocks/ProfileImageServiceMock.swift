@@ -4,7 +4,6 @@
 //
 //  Created by Svetlana on 2025/12/23.
 //
-import ImageFeed
 import Foundation
 
 final class ProfileImageServiceMock: ProfileImageServiceProtocol {

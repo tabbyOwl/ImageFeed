@@ -64,7 +64,7 @@ final class AuthViewController: UIViewController {
         enterButton.layer.cornerRadius = 16
         enterButton.addTarget(self, action: #selector(didTapEnterButton), for: .touchUpInside)
         enterButton.backgroundColor = .ypWhite
-        enterButton.accessibilityIdentifier = "Authenticate"
+        enterButton.accessibilityIdentifier = AccessibilityIdentifier.Auth.enterButton
         view.addSubview(enterButton)
     }
     
